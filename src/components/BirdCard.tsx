@@ -36,18 +36,19 @@ function BirdCard({ bird }: { bird: Bird }) {
   };
 
   // const fetchBirdSounds: any = async (birdName: any) => {
-  //   const response = await fetch(
-  //     `https://xeno-canto.org/api/2/recordings?query=${encodeURIComponent(
-  //       birdName
-  //     )}`
-  //   );
-  //   const data = await response.json();
-  //   return data.recordings.map((recording: any) => recording.file);
+  //   const endpoint = `https://xeno-canto.org/api/2/recordings?query=${encodeURIComponent(
+  //     birdName
+  //   )}`;
+  //   try {
+  //     const response = await fetch(endpoint);
+  //     const data = await response.json();
+  //     // console.log(data.recordings[0]);
+  //     return data.recordings[0].id;
+  //   } catch (error) {
+  //     console.error("Error fetching sounds from Xeno-Canto:", error);
+  //     return [];
+  //   }
   // };
-
-  // fetchBirdSounds(bird.sciName).then((data: any) => {
-  //   console.log(data);
-  // });
 
   const {
     data: imagesData,
@@ -57,6 +58,15 @@ function BirdCard({ bird }: { bird: Bird }) {
     queryKey: ["images", bird.sciName],
     queryFn: () => fetchBirdImages(bird.sciName),
   });
+
+  // const {
+  //   data: soundsData,
+  //   error: soundsError,
+  //   isLoading: soundsIsLoading,
+  // } = useQuery({
+  //   queryKey: ["sounds", bird.sciName],
+  //   queryFn: () => fetchBirdSounds(bird.sciName),
+  // });
 
   return (
     <div
@@ -89,21 +99,33 @@ function BirdCard({ bird }: { bird: Bird }) {
       <p className="text-gray-700">
         <b className="text-gray-900">Time:</b> {formattedTime}
       </p>
+      {/* {soundsIsLoading && <p className="text-gray-600">Loading sounds...</p>}
+      {soundsError && (
+        <p className="text-red-500">Error: {soundsError.message}</p>
+      )}
+      {soundsData && imagesData && (
+          <iframe
+            src={`https://xeno-canto.org/${soundsData}/embed?simple=1`}
+            scrolling="no"
+            frameborder="0"
+            width="100%"
+            height="220"
+          ></iframe>
+      )} */}
       {imagesData && (
-         <p className="text-sm text-center">
-        {" "}
-        image from Flickr{" "}
-        <a
-          className="text-green-800 hover:text-green-500 text-sm underline"
-          href={imagesData[1]}
-          target="_blank"
-          rel="noreferrer"
-        >
-          author
-        </a>
-      </p>
-        )}
-     
+        <p className="text-sm text-center">
+          {" "}
+          image from Flickr{" "}
+          <a
+            className="text-green-800 hover:text-green-500 text-sm underline"
+            href={imagesData[1]}
+            target="_blank"
+            rel="noreferrer"
+          >
+            author
+          </a>
+        </p>
+      )}
     </div>
   );
 }

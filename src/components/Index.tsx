@@ -63,7 +63,6 @@ function Index() {
 
   function handleSubmit(e: any) {
     e.preventDefault();
-    console.log(latitude, longitude);
     refetch();
   }
 
@@ -74,57 +73,60 @@ function Index() {
 
   return (
     <div className="text-gray-800 bg-green-50 grid place-items-center">
-      <h3 className="text-5xl m-2 text-green-700">Birds</h3>
+      <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
       {isLoading && <p className="text-green-600">Loading...</p>}
       {error && <p className="text-red-600">Error: {error.message}</p>}
-      <form
-        className="m-2 text-gray-800 bg-green-100 p-4 rounded flex flex-col md:flex-row"
-        onSubmit={handleSubmit}
-      >
-        <label className="inline-flex items-center cursor-pointer">
+      <div className="m-2 p-4 bg-green-100">
+        <h2 className="m-2 text-2xl text-green-700 text-center">Your location</h2>
+        <form
+          className=" text-gray-800 rounded flex flex-col md:flex-row"
+          onSubmit={handleSubmit}
+        >
+          <label className="inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="geolocationManually"
+              className="sr-only peer"
+              checked={geolocationManually}
+              onChange={(e) => setGeolocationManually(e.target.checked)}
+            />
+            <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
+            <span className="ms-3 text-sm font-medium text-gray-700">
+              Insert geolocation manually
+            </span>
+          </label>
           <input
-            type="checkbox"
-            id="geolocationManually"
-            className="sr-only peer"
-            checked={geolocationManually}
-            onChange={(e) => setGeolocationManually(e.target.checked)}
+            type="text"
+            placeholder="Latitude"
+            value={latitude}
+            onChange={(e) => setLatitude(Number(e.target.value))}
+            className="m-2 p-2 rounded bg-green-50 text-gray-700 border border-gray-300"
+            disabled={!geolocationManually}
           />
-          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-          <span className="ms-3 text-sm font-medium text-gray-700">
-            Insert geolocation manually
-          </span>
-        </label>
-        <input
-          type="text"
-          placeholder="Latitude"
-          value={latitude}
-          onChange={(e) => setLatitude(Number(e.target.value))}
-          className="m-2 p-2 rounded bg-green-50 text-gray-700 border border-gray-300"
-          disabled={!geolocationManually}
-        />
-        <input
-          type="text"
-          placeholder="Longitude"
-          value={longitude}
-          onChange={(e) => setLongitude(Number(e.target.value))}
-          className="m-2 p-2 rounded bg-green-50 text-gray-700 border border-gray-300"
-          disabled={!geolocationManually}
-        />
-        <button
-          type="submit"
-          className={`m-2 p-2 w-60 rounded text-white 
+          <input
+            type="text"
+            placeholder="Longitude"
+            value={longitude}
+            onChange={(e) => setLongitude(Number(e.target.value))}
+            className="m-2 p-2 rounded bg-green-50 text-gray-700 border border-gray-300"
+            disabled={!geolocationManually}
+          />
+          <button
+            type="submit"
+            className={`m-2 p-2 w-60 rounded text-white 
         ${geolocationManually ? "bg-green-500 hover:bg-green-700" : "bg-gray-600"}
         `}
-          disabled={!geolocationManually}
-        >
-          Submit
-        </button>
-      </form>
+            disabled={!geolocationManually}
+          >
+            Submit
+          </button>
+        </form>
+      </div>
       {data && (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 m-5">
           {data.length > 0 &&
             data.map((bird: any) => (
-                <BirdCard key={bird.speciesCode} bird={bird} />
+              <BirdCard key={bird.speciesCode} bird={bird} />
             ))}
         </div>
       )}
