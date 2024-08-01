@@ -12,6 +12,7 @@ export const useGeolocation = () => {
     useState<boolean>(false);
 
   const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
+  const [geolocationErrorMessage, setGeolocationErrorMessage] = useState<string>("");
 
   const getLocation = async () => {
     setIsLoadingLocation(true);
@@ -29,15 +30,18 @@ export const useGeolocation = () => {
         setLongitude(position.coords.longitude.toFixed(2));
       } else {
         console.error("Geolocation is not supported by this browser.");
+        setGeolocationErrorMessage("Geolocation is not supported by this browser.");
         setGeolocationManually(true);
       }
     } catch (error) {
       if (error instanceof GeolocationPositionError) {
+        setGeolocationErrorMessage(error.message);
         console.error("Error occurred: " + error.message);
         if (error.code === 1) {
           setGeolocationManually(true);
         }
       } else {
+        setGeolocationErrorMessage("An unexpected error occurred.");
         console.error("An unexpected error occurred: " + error);
       }
     } finally {
@@ -54,6 +58,7 @@ export const useGeolocation = () => {
     longitude,
     geolocationManually,
     isLoadingLocation,
+    geolocationErrorMessage,
     setLatitude,
     setLongitude,
     setGeolocationManually,

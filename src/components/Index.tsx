@@ -16,6 +16,7 @@ const Index: React.FC = () => {
     setLatitude,
     setLongitude,
     setGeolocationManually,
+    geolocationErrorMessage,
   } = useGeolocation();
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
@@ -62,9 +63,13 @@ const Index: React.FC = () => {
           setGeolocationManually={setGeolocationManually}
         />
       </div>
-      {isLoadingLocation && (
-        <Loading loadingText="loading geolocation" />
+      {geolocationErrorMessage && (
+        <>
+          <p>could not get your location, please input it manually</p>
+          <p>{geolocationErrorMessage}</p>
+        </>
       )}
+      {isLoadingLocation && <Loading loadingText="loading geolocation" />}
       {isLoadingData && <Loading loadingText="loading birds" />}
       {error && <Error message={error.message} />}
       {data && (

@@ -4,7 +4,7 @@ import ReactLoading from 'react-loading';
 const Loading: React.FC<LoadingProps> = ({loadingText, animationType}) => {
 
     return (
-      <div className="grid place-items-center gap-4 text-green-700">
+      <div className="grid place-items-center gap-10 text-green-700">
         <ReactLoading
           type={animationType || "bars"}
           color={"#15803d"}
