@@ -1,17 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect} from "react";
+import { useEffect } from "react";
 import { useGeolocation } from "../hooks/useGeolocation";
 import BirdCard from "./BirdCard";
 import FormGeolocation from "./FormGeolocation";
+import Loading from "./Loading";
+import Error from "./Error";
+import { FetchBirdsNearby } from "../types";
 
-type FetchBirdsNearby = (arg0: {
-  latitude: string;
-  longitude: string;
-}) => Promise<any>;
-
-function Index() {
-  const API_KEY = import.meta.env.VITE_API_KEY_EBIRD;
-
+const Index: React.FC = () => {
   const {
     latitude,
     longitude,
@@ -30,22 +26,22 @@ function Index() {
       `https://api.ebird.org/v2/data/obs/geo/recent?dist=5&back=3&lat=${Number(latitude)}&lng=${Number(longitude)}`,
       {
         headers: {
-          "X-eBirdApiToken": API_KEY,
+          "X-eBirdApiToken": import.meta.env.VITE_API_KEY_EBIRD,
         },
       }
     );
     return response.json();
   };
 
-  const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ["birds"],
-    queryFn: () => fetchBirdsNearby({ latitude, longitude }),
-  });
-
   function handleSubmit(e: any) {
     e.preventDefault();
     refetch();
   }
+
+  const { data, error, isLoading: isLoadingData, refetch } = useQuery({
+    queryKey: ["birds"],
+    queryFn: () => fetchBirdsNearby({ latitude, longitude }),
+  });
 
   // fetch data when latitude or longitude changes but only when geolocation is not manually set
   useEffect(() => {
@@ -53,10 +49,8 @@ function Index() {
   }, [latitude, longitude, geolocationManually]);
 
   return (
-    <div className="text-gray-800 bg-green-50 grid place-items-center">
+    <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
       <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
-      {isLoading && <p className="text-green-600">Loading...</p>}
-      {error && <p className="text-red-600">Error: {error.message}</p>}
       <div className="m-2 p-4 pb-8 bg-green-100">
         <FormGeolocation
           latitude={latitude}
@@ -69,9 +63,10 @@ function Index() {
         />
       </div>
       {isLoadingLocation && (
-        <p className="text-green-600">Loading location...</p>
+        <Loading loadingText="loading geolocation" />
       )}
-      {isLoading && <p className="text-green-600">Loading data...</p>}
+      {isLoadingData && <Loading loadingText="loading birds" />}
+      {error && <Error message={error.message} />}
       {data && (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 m-5">
           {data.length > 0 &&
@@ -85,5 +80,3 @@ function Index() {
 }
 
 export default Index;
-
-// https://documenter.getpostman.com/view/664302/S1ENwy59

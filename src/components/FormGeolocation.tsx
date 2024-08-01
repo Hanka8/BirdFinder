@@ -1,14 +1,5 @@
 import { ChangeEvent } from "react";
-
-interface LocationFormProps {
-  latitude: string;
-  longitude: string;
-  geolocationManually: boolean;
-  handleSubmit: (e: React.FormEvent) => void;
-  setGeolocationManually: (value: boolean) => void;
-  setLatitude: (value: string) => void;
-  setLongitude: (value: string) => void;
-}
+import { LocationFormProps } from "../types";
 
 const LocationForm: React.FC<LocationFormProps> = ({
   latitude,
@@ -39,7 +30,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
     <div className="m-2 p-4 pb-8 bg-green-100">
       <h2 className="m-2 text-2xl text-green-700 text-center">Your location</h2>
       <form
-        className="text-gray-800 rounded flex flex-col items-center gap-4 md:flex-row"
+        className="text-gray-800 rounded flex flex-col items-center gap-4 lg:flex-row"
         onSubmit={handleSubmit}
       >
         <label className="inline-flex items-center cursor-pointer p-3">

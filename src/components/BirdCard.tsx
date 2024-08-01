@@ -1,18 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
+import { FetchBirdImages, BirdCardProps } from "../types";
+import Loading from "./Loading";
+import Error from "./Error";
 
-type Bird = {
-  speciesCode: string;
-  comName: string;
-  sciName: string;
-  howMany: number;
-  locName: string;
-  obsDt: string;
-};
-
-type FetchBirdImages = (birdName: string) => Promise<any>;
-
-function BirdCard({ bird }: { bird: Bird }) {
+const BirdCard: React.FC<BirdCardProps> = ({ bird }) => {
   const formattedDate = format(parseISO(bird.obsDt), "d MMMM yyyy");
   const formattedTime = format(parseISO(bird.obsDt), "H:mm");
 
@@ -35,21 +27,6 @@ function BirdCard({ bird }: { bird: Bird }) {
     }
   };
 
-  // const fetchBirdSounds: any = async (birdName: any) => {
-  //   const endpoint = `https://xeno-canto.org/api/2/recordings?query=${encodeURIComponent(
-  //     birdName
-  //   )}`;
-  //   try {
-  //     const response = await fetch(endpoint);
-  //     const data = await response.json();
-  //     // console.log(data.recordings[0]);
-  //     return data.recordings[0].id;
-  //   } catch (error) {
-  //     console.error("Error fetching sounds from Xeno-Canto:", error);
-  //     return [];
-  //   }
-  // };
-
   const {
     data: imagesData,
     error,
@@ -59,15 +36,6 @@ function BirdCard({ bird }: { bird: Bird }) {
     queryFn: () => fetchBirdImages(bird.sciName),
   });
 
-  // const {
-  //   data: soundsData,
-  //   error: soundsError,
-  //   isLoading: soundsIsLoading,
-  // } = useQuery({
-  //   queryKey: ["sounds", bird.sciName],
-  //   queryFn: () => fetchBirdSounds(bird.sciName),
-  // });
-
   return (
     <div
       key={bird.speciesCode}
@@ -76,12 +44,14 @@ function BirdCard({ bird }: { bird: Bird }) {
       <h3 className="text-xl font-semibold mb-3 text-gray-900">
         {bird.comName}
       </h3>
-      {isLoading && <p className="text-gray-600">Loading...</p>}
-      {error && <p className="text-red-500">Error: {error.message}</p>}
+      {isLoading && (
+        <Loading loadingText="loading image" animationType="spinningBubbles" />
+      )}
+      {error && <Error message={error.message} />}
       {imagesData && (
         <picture>
           <img
-            className="w-full h-48 object-contain rounded-lg mb-3"
+            className="w-full h-48 object-cover rounded-lg mb-3"
             src={imagesData[0]}
             alt={bird.comName}
           />
@@ -99,19 +69,6 @@ function BirdCard({ bird }: { bird: Bird }) {
       <p className="text-gray-700">
         <b className="text-gray-900">Time:</b> {formattedTime}
       </p>
-      {/* {soundsIsLoading && <p className="text-gray-600">Loading sounds...</p>}
-      {soundsError && (
-        <p className="text-red-500">Error: {soundsError.message}</p>
-      )}
-      {soundsData && imagesData && (
-          <iframe
-            src={`https://xeno-canto.org/${soundsData}/embed?simple=1`}
-            scrolling="no"
-            frameborder="0"
-            width="100%"
-            height="220"
-          ></iframe>
-      )} */}
       {imagesData && (
         <p className="text-sm text-center">
           {" "}
@@ -128,6 +85,6 @@ function BirdCard({ bird }: { bird: Bird }) {
       )}
     </div>
   );
-}
+};
 
 export default BirdCard;
