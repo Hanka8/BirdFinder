@@ -1,10 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useGeolocation } from "../hooks/useGeolocation";
 import BirdCard from "./BirdCard";
 import FormGeolocation from "./FormGeolocation";
 import Loading from "./Loading";
 import Error from "./Error";
+import Map from "ol/Map.js";
+import OSM from "ol/source/OSM.js";
+import TileLayer from "ol/layer/Tile.js";
+import View from "ol/View.js";
+import { fromLonLat } from "ol/proj";
 import { FetchBirdsNearby, Bird } from "../types";
 
 const Index: React.FC = () => {
@@ -49,8 +54,34 @@ const Index: React.FC = () => {
     !geolocationManually && refetch();
   }, [latitude, longitude, geolocationManually, refetch]);
 
+  const mapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!latitude || !longitude) return;
+
+    const coordinates = fromLonLat([parseFloat(longitude), parseFloat(latitude)]);
+
+    const map = new Map({
+      target: mapRef.current || undefined, 
+      layers: [
+        new TileLayer({
+          source: new OSM(),
+        }),
+      ],
+      view: new View({
+        center: [0, 0],
+        zoom: 12,
+      }),
+    });
+
+    map.getView().setCenter(coordinates);
+
+    return () => map.setTarget(undefined);
+  }, [latitude, longitude]);
+
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
+      <div id="map" ref={mapRef} className=" w-full h-64"></div>
       <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
       <div className="m-2 p-4 pb-8 bg-green-100">
         <FormGeolocation
