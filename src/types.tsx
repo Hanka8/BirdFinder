@@ -1,7 +1,7 @@
 export type FetchBirdsNearby = (arg0: {
   latitude: string;
   longitude: string;
-}) => Promise<any>;
+}) => Promise<Bird[]>;
 
 export type LocationFormProps = {
   latitude: string;

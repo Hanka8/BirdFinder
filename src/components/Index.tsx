@@ -5,7 +5,7 @@ import BirdCard from "./BirdCard";
 import FormGeolocation from "./FormGeolocation";
 import Loading from "./Loading";
 import Error from "./Error";
-import { FetchBirdsNearby } from "../types";
+import { FetchBirdsNearby, Bird } from "../types";
 
 const Index: React.FC = () => {
   const {
@@ -34,7 +34,7 @@ const Index: React.FC = () => {
     return response.json();
   };
 
-  function handleSubmit(e: any) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     refetch();
   }
@@ -47,7 +47,7 @@ const Index: React.FC = () => {
   // fetch data when latitude or longitude changes but only when geolocation is not manually set
   useEffect(() => {
     !geolocationManually && refetch();
-  }, [latitude, longitude, geolocationManually]);
+  }, [latitude, longitude, geolocationManually, refetch]);
 
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
@@ -75,7 +75,7 @@ const Index: React.FC = () => {
       {data && (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 m-5">
           {data.length > 0 &&
-            data.map((bird: any) => (
+            data.map((bird: Bird) => (
               <BirdCard key={bird.speciesCode} bird={bird} />
             ))}
         </div>
