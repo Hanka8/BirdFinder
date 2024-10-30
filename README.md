@@ -1,6 +1,6 @@
 - CORS policy on APIs
 
-## takeaways
+## takeaways 1
 
 ### double rendering
 - React's Strict Mode can cause components to render twice in development mode to help identify side effects
