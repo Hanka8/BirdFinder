@@ -16,9 +16,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v4
-        with:
-          node-version-file: '.node-version'
-          cache: 'npm'
       # To allow for private packages to be downloaded
       - name: Install dependencies
         run: npm ci
