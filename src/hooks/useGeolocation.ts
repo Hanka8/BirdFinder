@@ -8,7 +8,7 @@ export const useGeolocation = () => {
   const [latitude, setLatitude] = useState<string>("");
   const [longitude, setLongitude] = useState<string>("");
 
-  const [geolocationManually, setGeolocationManually] =
+  const [isGeolocationManually, setGeolocationManually] =
     useState<boolean>(false);
 
   const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
@@ -25,21 +25,16 @@ export const useGeolocation = () => {
     try {
       if (navigator.geolocation) {
         const position = await getCurrentPositionPromise();
-        setGeolocationManually(false);
         setLatitude(position.coords.latitude.toFixed(2));
         setLongitude(position.coords.longitude.toFixed(2));
       } else {
         console.error("Geolocation is not supported by this browser.");
         setGeolocationErrorMessage("Geolocation is not supported by this browser.");
-        setGeolocationManually(true);
       }
     } catch (error) {
       if (error instanceof GeolocationPositionError) {
         setGeolocationErrorMessage(error.message);
         console.error("Error occurred: " + error.message);
-        if (error.code === 1) {
-          setGeolocationManually(true);
-        }
       } else {
         setGeolocationErrorMessage("An unexpected error occurred.");
         console.error("An unexpected error occurred: " + error);
@@ -56,7 +51,7 @@ export const useGeolocation = () => {
   return {
     latitude,
     longitude,
-    geolocationManually,
+    isGeolocationManually,
     isLoadingLocation,
     geolocationErrorMessage,
     setLatitude,
