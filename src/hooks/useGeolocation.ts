@@ -2,14 +2,9 @@
 // thats because getCurrentPosition is a callback-based function
 // https://developer.mozilla.org/en-US/docs/Web/API/Geolocation/getCurrentPosition
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export const useGeolocation = () => {
-  const [latitude, setLatitude] = useState<string>("");
-  const [longitude, setLongitude] = useState<string>("");
-
-  const [isGeolocationManually, setGeolocationManually] =
-    useState<boolean>(false);
 
   const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
   const [geolocationErrorMessage, setGeolocationErrorMessage] = useState<string>("");
@@ -25,8 +20,9 @@ export const useGeolocation = () => {
     try {
       if (navigator.geolocation) {
         const position = await getCurrentPositionPromise();
-        setLatitude(position.coords.latitude.toFixed(2));
-        setLongitude(position.coords.longitude.toFixed(2));
+        const latitude = position.coords.latitude.toFixed(2);
+        const longitude = position.coords.longitude.toFixed(2);
+        return { latitude, longitude };
       } else {
         console.error("Geolocation is not supported by this browser.");
         setGeolocationErrorMessage("Geolocation is not supported by this browser.");
@@ -44,18 +40,9 @@ export const useGeolocation = () => {
     }
   };
 
-  useEffect(() => {
-    getLocation();
-  }, []);
-
   return {
-    latitude,
-    longitude,
-    isGeolocationManually,
+    getLocation,
     isLoadingLocation,
     geolocationErrorMessage,
-    setLatitude,
-    setLongitude,
-    setGeolocationManually,
   };
 };
