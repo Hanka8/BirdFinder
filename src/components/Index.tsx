@@ -16,7 +16,7 @@ const Index: React.FC = () => {
   const {
     latitude,
     longitude,
-    geolocationManually,
+    isGeolocationManually,
     isLoadingLocation,
     setLatitude,
     setLongitude,
@@ -36,7 +36,10 @@ const Index: React.FC = () => {
         },
       }
     );
-    return response.json();
+    const data = await response.json();
+    console.log("birds fetched for", latitude, longitude);
+    console.log(data);
+    return data;
   };
 
   function handleSubmit(e: React.FormEvent) {
@@ -51,11 +54,12 @@ const Index: React.FC = () => {
 
   // fetch data when latitude or longitude changes but only when geolocation is not manually set
   useEffect(() => {
-    !geolocationManually && refetch();
-  }, [latitude, longitude, geolocationManually, refetch]);
+    !isGeolocationManually && refetch();
+  }, [latitude, longitude, isGeolocationManually, refetch]);
 
   const mapRef = useRef<HTMLDivElement | null>(null);
 
+  // create map when latitude and longitude are set
   useEffect(() => {
     if (!latitude || !longitude) return;
 
@@ -81,7 +85,7 @@ const Index: React.FC = () => {
 
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
-      <div id="map" ref={mapRef} className=" w-full h-64"></div>
+      <div id="map" ref={mapRef} className="w-full h-64"></div>
       <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
       <div className="m-2 p-4 pb-8 bg-green-100">
         <FormGeolocation
@@ -89,7 +93,7 @@ const Index: React.FC = () => {
           longitude={longitude}
           setLatitude={setLatitude}
           setLongitude={setLongitude}
-          geolocationManually={geolocationManually}
+          geolocationManually={isGeolocationManually}
           handleSubmit={handleSubmit}
           setGeolocationManually={setGeolocationManually}
         />
