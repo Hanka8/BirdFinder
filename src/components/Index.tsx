@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGeolocation } from "../hooks/useGeolocation";
 import BirdCard from "./BirdCard";
 import FormGeolocation from "./FormGeolocation";
@@ -13,23 +13,30 @@ import { fromLonLat } from "ol/proj";
 import { FetchBirdsNearby, Bird } from "../types";
 
 const Index: React.FC = () => {
-  const {
-    latitude,
-    longitude,
-    isGeolocationManually,
-    isLoadingLocation,
-    setLatitude,
-    setLongitude,
-    setGeolocationManually,
-    geolocationErrorMessage,
-  } = useGeolocation();
+
+  const [latitude, setLatitude] = useState<string>("");
+  const [longitude, setLongitude] = useState<string>("");
+  const [isGeolocationManually, setGeolocationManually] = useState<boolean>(false);
+
+  const { getLocation, isLoadingLocation, geolocationErrorMessage } = useGeolocation();
+
+  useEffect(() => {
+    if (!isGeolocationManually) {
+      getLocation().then((location) => {
+        if (location) {
+          setLatitude(location.latitude);
+          setLongitude(location.longitude);
+        }
+      });
+    }
+  }, [isGeolocationManually, getLocation]);
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
     latitude,
     longitude,
   }) => {
     const response = await fetch(
-      `https://api.ebird.org/v2/data/obs/geo/recent?dist=5&back=3&lat=${Number(latitude)}&lng=${Number(longitude)}`,
+      `https://api.ebird.org/v2/data/obs/geo/recent?dist=20&back=3&lat=${Number(latitude)}&lng=${Number(longitude)}`,
       {
         headers: {
           "X-eBirdApiToken": import.meta.env.VITE_API_KEY_EBIRD,
