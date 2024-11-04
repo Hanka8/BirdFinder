@@ -97,3 +97,9 @@ export type InteractiveMapProps = {
   setLongitude: (value: string) => void;
   data: Bird[] | undefined;
 };
+
+export type MapModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  content: string;
+}
