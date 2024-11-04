@@ -21,6 +21,8 @@ export type Bird = {
   howMany: number;
   locName: string;
   obsDt: string;
+  lat: number;
+  lng: number;
 };
 
 export type BirdCardProps = {
@@ -91,4 +93,5 @@ export type ErrorProps = {
 export type InteractiveMapProps = {
   latitude: string;
   longitude: string;
+  data: Bird[] | undefined;
 };
