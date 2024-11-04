@@ -8,6 +8,7 @@ export type LocationFormProps = {
   longitude: string;
   geolocationManually: boolean;
   refetchBirdData: () => void;
+  setLoadingLocation: (value: boolean) => void;
   setGeolocationManually: (value: boolean) => void;
   setLatitude: (value: string) => void;
   setLongitude: (value: string) => void;
