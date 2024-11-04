@@ -87,3 +87,8 @@ export type LoadingProps = {
 export type ErrorProps = {
   message: string;
 };
+
+export type InteractiveMapProps = {
+  latitude: string;
+  longitude: string;
+};
