@@ -9,7 +9,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
   geolocationManually,
   setLatitude,
   setLongitude,
-  handleSubmit,
+  refetchBirdData,
   setGeolocationManually,
 }) => {
   const [adress, setAdress] = useState<string>(latitude);
@@ -28,14 +28,17 @@ const LocationForm: React.FC<LocationFormProps> = ({
     return response.json();
   };
 
-  const { data, error, isLoading, refetch } = useQuery({
+  const { data, error, isLoading, refetch: refetchCoords } = useQuery({
     queryKey: ["coordinates"],
     queryFn: () => getCoordinatesFromAdress(adress),
   });
 
   const handleSubmitAdress = (e: React.FormEvent) => {
-    handleSubmit(e);
-    refetch();
+    e.preventDefault();
+    console.log("handling submit");
+    refetchCoords().then(() => {
+      refetchBirdData();
+    });
   };
 
   useEffect(() => {
@@ -89,6 +92,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
         <button
           type="submit"
           className={`m-2 p-2 w-60 rounded text-white ${geolocationManually ? "bg-green-500 hover:bg-green-700" : "bg-gray-600"}`}
+          onClick={handleSubmitAdress}
           disabled={!geolocationManually}
         >
           Search birds

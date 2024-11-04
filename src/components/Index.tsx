@@ -13,26 +13,30 @@ import { fromLonLat } from "ol/proj";
 import { FetchBirdsNearby, Bird } from "../types";
 
 const Index: React.FC = () => {
-
   const [latitude, setLatitude] = useState<string>("");
   const [longitude, setLongitude] = useState<string>("");
-  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
-  const [isGeolocationManually, setGeolocationManually] = useState<boolean>(false);
-  const [geolocationErrorMessage, setGeolocationErrorMessage] = useState<string>("");
+  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
+  const [isGeolocationManually, setGeolocationManually] =
+    useState<boolean>(false);
+  const [geolocationErrorMessage, setGeolocationErrorMessage] =
+    useState<string>("");
 
+  // get geolocation from browser when isGeolocationManually is false
   useEffect(() => {
     if (!isGeolocationManually) {
       setIsLoadingLocation(true);
-      getLocation().then((location) => {
-        if (typeof location === "string") {
-          setGeolocationErrorMessage(location);
-          return;
-        }
-        setLatitude(location.latitude);
-        setLongitude(location.longitude);
-      }).then(() => {
-        setIsLoadingLocation(false);
-      });
+      getLocation()
+        .then((location) => {
+          if (typeof location === "string") {
+            setGeolocationErrorMessage(location);
+            return;
+          }
+          setLatitude(location.latitude);
+          setLongitude(location.longitude);
+        })
+        .then(() => {
+          setIsLoadingLocation(false);
+        });
     }
   }, [isGeolocationManually]);
 
@@ -40,34 +44,33 @@ const Index: React.FC = () => {
     latitude,
     longitude,
   }) => {
-    const response = await fetch(
-      `https://api.ebird.org/v2/data/obs/geo/recent?dist=20&back=3&lat=${Number(latitude)}&lng=${Number(longitude)}`,
-      {
-        headers: {
-          "X-eBirdApiToken": import.meta.env.VITE_API_KEY_EBIRD,
-        },
-      }
-    );
-    const data = await response.json();
-    console.log("birds fetched for", latitude, longitude);
-    console.log(data);
-    return data;
+      const response = await fetch(
+        `https://api.ebird.org/v2/data/obs/geo/recent?dist=15&back=3&lat=${Number(latitude)}&lng=${Number(longitude)}`,
+        {
+          headers: {
+            "X-eBirdApiToken": import.meta.env.VITE_API_KEY_EBIRD,
+          },
+        }
+      );
+      const data = await response.json();
+      return data;
   };
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    refetch();
-  }
-
-  const { data, error, isLoading: isLoadingData, refetch } = useQuery({
+  const {
+    data,
+    error,
+    isLoading: isLoadingData,
+    isFetching,
+    refetch: refetchBirdData,
+  } = useQuery({
     queryKey: ["birds"],
     queryFn: () => fetchBirdsNearby({ latitude, longitude }),
   });
 
-  // fetch data when latitude or longitude changes but only when geolocation is not manually set
+  // refetch data when coords are changed
   useEffect(() => {
-    !isGeolocationManually && refetch();
-  }, [latitude, longitude, isGeolocationManually, refetch]);
+    refetchBirdData();
+  }, [latitude, longitude, isGeolocationManually, refetchBirdData]);
 
   const mapRef = useRef<HTMLDivElement | null>(null);
 
@@ -75,10 +78,13 @@ const Index: React.FC = () => {
   useEffect(() => {
     if (!latitude || !longitude) return;
 
-    const coordinates = fromLonLat([parseFloat(longitude), parseFloat(latitude)]);
+    const coordinates = fromLonLat([
+      parseFloat(longitude),
+      parseFloat(latitude),
+    ]);
 
     const map = new Map({
-      target: mapRef.current || undefined, 
+      target: mapRef.current || undefined,
       layers: [
         new TileLayer({
           source: new OSM(),
@@ -106,7 +112,7 @@ const Index: React.FC = () => {
           setLatitude={setLatitude}
           setLongitude={setLongitude}
           geolocationManually={isGeolocationManually}
-          handleSubmit={handleSubmit}
+          refetchBirdData={refetchBirdData}
           setGeolocationManually={setGeolocationManually}
         />
       </div>
@@ -117,7 +123,7 @@ const Index: React.FC = () => {
         </>
       )}
       {isLoadingLocation && <Loading loadingText="loading geolocation" />}
-      {isLoadingData && <Loading loadingText="loading birds" />}
+      {isLoadingData || isFetching && <Loading loadingText="loading birds" />}
       {error && <Error message={error.message} />}
       {data && (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 m-5">
@@ -129,6 +135,6 @@ const Index: React.FC = () => {
       )}
     </div>
   );
-}
+};
 
 export default Index;
