@@ -11,6 +11,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
   setLongitude,
   refetchBirdData,
   setGeolocationManually,
+  setLoadingLocation,
 }) => {
   const [adress, setAdress] = useState<string>(latitude);
 
@@ -28,7 +29,12 @@ const LocationForm: React.FC<LocationFormProps> = ({
     return response.json();
   };
 
-  const { data, error, isLoading, refetch: refetchCoords } = useQuery({
+  const {
+    data,
+    error,
+    isLoading,
+    refetch: refetchCoords,
+  } = useQuery({
     queryKey: ["coordinates"],
     queryFn: () => getCoordinatesFromAdress(adress),
   });
@@ -41,19 +47,39 @@ const LocationForm: React.FC<LocationFormProps> = ({
     });
   };
 
+  const handleCheckBoxChange = () => {
+    setGeolocationManually(!geolocationManually);
+    if (geolocationManually) {
+      setLoadingLocation(false);
+    }
+  };
+
   useEffect(() => {
     if (!geolocationManually) return;
     if (!data) return;
     if (isLoading) return;
     if (error) return;
 
-    if (data.items[0] && data.items[0].position.lat && data.items[0].position.lon) {
+    if (
+      data.items[0] &&
+      data.items[0].position.lat &&
+      data.items[0].position.lon
+    ) {
       setLatitude(data.items[0].position.lat);
       setLongitude(data.items[0].position.lon);
     }
 
     console.log("coors from adress set to", latitude, longitude);
-  }, [geolocationManually, data, isLoading, error, latitude, longitude, setLatitude, setLongitude]);
+  }, [
+    geolocationManually,
+    data,
+    isLoading,
+    error,
+    latitude,
+    longitude,
+    setLatitude,
+    setLongitude,
+  ]);
 
   return (
     <div className="m-2 p-4 pb-8 bg-green-100">
@@ -68,7 +94,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             id="geolocationManually"
             className="sr-only peer"
             checked={geolocationManually}
-            onChange={() => setGeolocationManually(!geolocationManually)}
+            onChange={handleCheckBoxChange}
           />
           <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600 flex-shrink-0"></div>
           <span className="ms-3 text-sm font-medium text-gray-700">

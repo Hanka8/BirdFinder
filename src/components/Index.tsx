@@ -10,12 +10,13 @@ import OSM from "ol/source/OSM.js";
 import TileLayer from "ol/layer/Tile.js";
 import View from "ol/View.js";
 import { fromLonLat } from "ol/proj";
+import "../index.css";
 import { FetchBirdsNearby, Bird } from "../types";
 
 const Index: React.FC = () => {
   const [latitude, setLatitude] = useState<string>("");
   const [longitude, setLongitude] = useState<string>("");
-  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(false);
+  const [isLoadingLocation, setLoadingLocation] = useState<boolean>(false);
   const [isGeolocationManually, setGeolocationManually] =
     useState<boolean>(false);
   const [geolocationErrorMessage, setGeolocationErrorMessage] =
@@ -24,7 +25,7 @@ const Index: React.FC = () => {
   // get geolocation from browser when isGeolocationManually is false
   useEffect(() => {
     if (!isGeolocationManually) {
-      setIsLoadingLocation(true);
+      setLoadingLocation(true);
       getLocation()
         .then((location) => {
           if (typeof location === "string") {
@@ -35,7 +36,7 @@ const Index: React.FC = () => {
           setLongitude(location.longitude);
         })
         .then(() => {
-          setIsLoadingLocation(false);
+          setLoadingLocation(false);
         });
     }
   }, [isGeolocationManually]);
@@ -103,7 +104,7 @@ const Index: React.FC = () => {
 
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
-      <div id="map" ref={mapRef} className="w-full h-64"></div>
+      <div id="map" ref={mapRef} className="w-full h-32rem"></div>
       <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
       <div className="m-2 p-4 pb-8 bg-green-100">
         <FormGeolocation
@@ -114,6 +115,7 @@ const Index: React.FC = () => {
           geolocationManually={isGeolocationManually}
           refetchBirdData={refetchBirdData}
           setGeolocationManually={setGeolocationManually}
+          setLoadingLocation={setLoadingLocation}
         />
       </div>
       {geolocationErrorMessage && (
@@ -123,7 +125,7 @@ const Index: React.FC = () => {
         </>
       )}
       {isLoadingLocation && <Loading loadingText="loading geolocation" />}
-      {isLoadingData || isFetching && <Loading loadingText="loading birds" />}
+      {isLoadingData || (isFetching && <Loading loadingText="loading birds" />)}
       {error && <Error message={error.message} />}
       {data && (
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 m-5">
