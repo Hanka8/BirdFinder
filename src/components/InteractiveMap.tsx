@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import MapModal from "./MapModal";
 import Map from "ol/Map.js";
 import OSM from "ol/source/OSM.js";
 import TileLayer from "ol/layer/Tile.js";
@@ -22,6 +23,10 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   setLongitude,
   data,
 }) => {
+
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [modalContent, setModalContent] = useState<string>("");
+
   const mapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -95,6 +100,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         })
       );
 
+      birdMarker.set("description", `Bird Name: ${bird.comName}`);
       vectorSource.addFeature(birdMarker);
     });
 
@@ -106,15 +112,39 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
     // Add click event listener to the map
     map.on("singleclick", (event) => {
-      const clickedCoordinate = toLonLat(event.coordinate); // Convert to longitude/latitude
-      setLatitude(clickedCoordinate[1].toFixed(2));
-      setLongitude(clickedCoordinate[0].toFixed(2));
+      const clickedFeature = map.forEachFeatureAtPixel(
+        event.pixel,
+        (feature) => {
+          return feature;
+        }
+      );
+
+      if (clickedFeature) {
+        const description = clickedFeature.get("description");
+        if (description) {
+          setModalContent(description); // Set the content for the modal
+          setModalOpen(true); // Open the modal
+        }
+      } else {
+        const clickedCoordinate = toLonLat(event.coordinate); // Convert to longitude/latitude
+        setLatitude(clickedCoordinate[1].toFixed(2));
+        setLongitude(clickedCoordinate[0].toFixed(2));
+      }
     });
 
     return () => map.setTarget(undefined);
   }, [latitude, longitude, data, setLatitude, setLongitude]);
 
-  return <div ref={mapRef} className="w-full h-32rem"></div>;
+  return (
+    <div className="w-full h-32rem">
+      <div ref={mapRef} className="w-full h-32rem"></div>
+      <MapModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        content={modalContent}
+      />
+    </div>
+  );
 };
 
 export default InteractiveMap;
