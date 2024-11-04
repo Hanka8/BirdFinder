@@ -10,6 +10,7 @@ import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import Circle from "ol/geom/Circle";
 import { Icon, Style, Stroke, Fill } from "ol/style";
+import { toLonLat } from "ol/proj";
 import { InteractiveMapProps } from "../types";
 import { radius } from "../constants";
 import birdIcon from "../assets/bird-ico.svg";
@@ -17,6 +18,8 @@ import birdIcon from "../assets/bird-ico.svg";
 const InteractiveMap: React.FC<InteractiveMapProps> = ({
   latitude,
   longitude,
+  setLatitude,
+  setLongitude,
   data,
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -92,7 +95,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         })
       );
 
-      vectorSource.addFeature(birdMarker); 
+      vectorSource.addFeature(birdMarker);
     });
 
     const markerLayer = new VectorLayer({
@@ -101,8 +104,15 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
     map.addLayer(markerLayer);
 
+    // Add click event listener to the map
+    map.on("singleclick", (event) => {
+      const clickedCoordinate = toLonLat(event.coordinate); // Convert to longitude/latitude
+      setLatitude(clickedCoordinate[1].toFixed(2));
+      setLongitude(clickedCoordinate[0].toFixed(2));
+    });
+
     return () => map.setTarget(undefined);
-  }, [latitude, longitude, data]);
+  }, [latitude, longitude, data, setLatitude, setLongitude]);
 
   return <div ref={mapRef} className="w-full h-32rem"></div>;
 };

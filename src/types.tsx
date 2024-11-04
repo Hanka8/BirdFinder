@@ -93,5 +93,7 @@ export type ErrorProps = {
 export type InteractiveMapProps = {
   latitude: string;
   longitude: string;
+  setLatitude: (value: string) => void;
+  setLongitude: (value: string) => void;
   data: Bird[] | undefined;
 };
