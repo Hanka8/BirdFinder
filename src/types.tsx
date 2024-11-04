@@ -7,7 +7,7 @@ export type LocationFormProps = {
   latitude: string;
   longitude: string;
   geolocationManually: boolean;
-  handleSubmit: (e: React.FormEvent) => void;
+  refetchBirdData: () => void;
   setGeolocationManually: (value: boolean) => void;
   setLatitude: (value: string) => void;
   setLongitude: (value: string) => void;
