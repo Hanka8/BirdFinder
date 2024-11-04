@@ -41,7 +41,6 @@ const LocationForm: React.FC<LocationFormProps> = ({
 
   const handleSubmitAdress = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("handling submit");
     refetchCoords().then(() => {
       refetchBirdData();
     });
@@ -69,7 +68,6 @@ const LocationForm: React.FC<LocationFormProps> = ({
       setLongitude(data.items[0].position.lon);
     }
 
-    console.log("coors from adress set to", latitude, longitude);
   }, [
     geolocationManually,
     data,
