@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useGeolocation } from "../hooks/useGeolocation";
+import { getLocation } from "../functions/getLocation";
 import BirdCard from "./BirdCard";
 import FormGeolocation from "./FormGeolocation";
 import Loading from "./Loading";
@@ -16,20 +16,25 @@ const Index: React.FC = () => {
 
   const [latitude, setLatitude] = useState<string>("");
   const [longitude, setLongitude] = useState<string>("");
+  const [isLoadingLocation, setIsLoadingLocation] = useState<boolean>(true);
   const [isGeolocationManually, setGeolocationManually] = useState<boolean>(false);
-
-  const { getLocation, isLoadingLocation, geolocationErrorMessage } = useGeolocation();
+  const [geolocationErrorMessage, setGeolocationErrorMessage] = useState<string>("");
 
   useEffect(() => {
     if (!isGeolocationManually) {
+      setIsLoadingLocation(true);
       getLocation().then((location) => {
-        if (location) {
-          setLatitude(location.latitude);
-          setLongitude(location.longitude);
+        if (typeof location === "string") {
+          setGeolocationErrorMessage(location);
+          return;
         }
+        setLatitude(location.latitude);
+        setLongitude(location.longitude);
+      }).then(() => {
+        setIsLoadingLocation(false);
       });
     }
-  }, [isGeolocationManually, getLocation]);
+  }, [isGeolocationManually]);
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
     latitude,
