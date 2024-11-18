@@ -15,14 +15,11 @@ const Index: React.FC = () => {
   const [latitude, setLatitude] = useState<string>("");
   const [longitude, setLongitude] = useState<string>("");
   const [isLoadingLocation, setLoadingLocation] = useState<boolean>(false);
-  const [isGeolocationManually, setGeolocationManually] =
-    useState<boolean>(false);
   const [geolocationErrorMessage, setGeolocationErrorMessage] =
     useState<string>("");
 
-  // get geolocation from browser when isGeolocationManually is false
+  // get geolocation from browser on first render
   useEffect(() => {
-    if (!isGeolocationManually) {
       setLoadingLocation(true);
       getLocation()
         .then((location) => {
@@ -36,8 +33,7 @@ const Index: React.FC = () => {
         .then(() => {
           setLoadingLocation(false);
         });
-    }
-  }, [isGeolocationManually]);
+  }, []);
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
     latitude,
@@ -69,7 +65,7 @@ const Index: React.FC = () => {
   // refetch data when coords are changed
   useEffect(() => {
     refetchBirdData();
-  }, [latitude, longitude, isGeolocationManually, refetchBirdData]);
+  }, [latitude, longitude, refetchBirdData]);
 
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
@@ -81,9 +77,7 @@ const Index: React.FC = () => {
           longitude={longitude}
           setLatitude={setLatitude}
           setLongitude={setLongitude}
-          geolocationManually={isGeolocationManually}
           refetchBirdData={refetchBirdData}
-          setGeolocationManually={setGeolocationManually}
           setLoadingLocation={setLoadingLocation}
         />
       </div>
