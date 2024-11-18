@@ -9,6 +9,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
   setLatitude,
   setLongitude,
   refetchBirdData,
+  setLoadingLocation,
 }) => {
   const [adress, setAdress] = useState<string>(latitude);
 
@@ -41,6 +42,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
     refetchCoords().then(() => {
       refetchBirdData();
     });
+    setLoadingLocation(false);
   };
 
   useEffect(() => {

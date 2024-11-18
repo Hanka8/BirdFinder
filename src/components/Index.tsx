@@ -14,13 +14,14 @@ import { FetchBirdsNearby, Bird } from "../types";
 const Index: React.FC = () => {
   const [latitude, setLatitude] = useState<string>("");
   const [longitude, setLongitude] = useState<string>("");
-  const [isLoadingLocation, setLoadingLocation] = useState<boolean>(false);
+  const [isLoadingLocation, setLoadingLocation] = useState<boolean>(true);
   const [geolocationErrorMessage, setGeolocationErrorMessage] =
     useState<string>("");
 
+
   // get geolocation from browser on first render
   useEffect(() => {
-      setLoadingLocation(true);
+      if (!isLoadingLocation) return;
       getLocation()
         .then((location) => {
           if (typeof location === "string") {

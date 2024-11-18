@@ -1,6 +1,7 @@
 export interface LocationFormProps {
   latitude: string;
   longitude: string;
+  setLoadingLocation: (value: boolean) => void;
   setLatitude: (latitude: string) => void;
   setLongitude: (longitude: string) => void;
   refetchBirdData: () => void;
