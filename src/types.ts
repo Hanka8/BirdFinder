@@ -45,3 +45,11 @@ export interface InteractiveMapProps {
   setLongitude: (longitude: string) => void;
   data: Bird[] | undefined;
 }
+
+export type RegionalStructureItem = {
+  name: string;
+  type: string;
+  isoCode?: string;
+};
+
+export type RegionalStructure = RegionalStructureItem[];

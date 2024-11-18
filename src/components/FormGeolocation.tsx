@@ -1,7 +1,7 @@
 import { ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LocationFormProps } from "../types";
+import { LocationFormProps, RegionalStructureItem } from "../types";
 
 const LocationForm: React.FC<LocationFormProps> = ({
   latitude,
@@ -12,6 +12,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
   setLoadingLocation,
 }) => {
   const [adress, setAdress] = useState<string>(latitude);
+  const [fetchedAdress, setFetchedAdress] = useState<string>("");
 
   const handleAdressChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAdress(e.target.value);
@@ -55,6 +56,16 @@ const LocationForm: React.FC<LocationFormProps> = ({
       data.items[0].position.lat &&
       data.items[0].position.lon
     ) {
+      console.log(data.items[0].regionalStructure);
+      if (data.items[0].regionalStructure) {
+        let adressString = "";
+        data.items[0].regionalStructure.forEach((item: RegionalStructureItem) => {
+          adressString += item.name + ", ";
+        });
+        adressString = adressString.slice(0, -2);
+        console.log(adressString);
+        setFetchedAdress(adressString);
+      }
       setLatitude(data.items[0].position.lat);
       setLongitude(data.items[0].position.lon);
     }
@@ -66,11 +77,15 @@ const LocationForm: React.FC<LocationFormProps> = ({
     longitude,
     setLatitude,
     setLongitude,
+    fetchedAdress,
   ]);
 
   return (
     <div className="m-2 p-4 pb-8 bg-green-100">
       <h2 className="m-2 text-2xl text-green-700 text-center">Your location</h2>
+      {fetchedAdress && (
+        <p className="m-2 text-gray-800 text-center">{fetchedAdress}</p>
+      )}
       <form
         className="text-gray-800 rounded flex flex-col items-center gap-4 lg:flex-row"
         onSubmit={handleSubmitAdress}
