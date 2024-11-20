@@ -1,5 +1,4 @@
 export type FetchBirdsNearby = (arg0: {
-  data: Bird[]
   latitude: string;
   longitude: string;
 }) => Promise<Bird[]>;
@@ -84,7 +83,7 @@ export type FetchBirdData = (birdName: string) => Promise<BirdData>;
 
 export type LoadingProps = {
   loadingText: string;
-  animationType?: "balls" | "bars" | "bubbles" | "spin" | "cylon" | "spin" | "spinningBubbles" | "spokes";
+  animationType?: "balls" | "bars" | "bubbles" | "spin" | "cylon"  | "spin" | "spinningBubbles" | "spokes";
 };
 
 export type ErrorProps = {
