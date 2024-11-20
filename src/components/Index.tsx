@@ -43,16 +43,16 @@ const Index: React.FC = () => {
     latitude,
     longitude,
   }) => {
-      const response = await fetch(
-        `https://api.ebird.org/v2/data/obs/geo/recent?dist=${radius}&back=30&includeProvisional=true&lat=${Number(latitude)}&lng=${Number(longitude)}`,
-        {
-          headers: {
-            "X-eBirdApiToken": import.meta.env.VITE_API_KEY_EBIRD,
-          },
-        }
-      );
-      const data = await response.json();
-      return data;
+    const response = await fetch(
+      `https://api.ebird.org/v2/data/obs/geo/recent?dist=${radius}&back=30&includeProvisional=true&lat=${Number(latitude)}&lng=${Number(longitude)}`,
+      {
+        headers: {
+          "X-eBirdApiToken": import.meta.env.VITE_API_KEY_EBIRD,
+        },
+      }
+    );
+    const data = await response.json();
+    return data;
   };
 
   const {
@@ -74,7 +74,7 @@ const Index: React.FC = () => {
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
       <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
-      <InteractiveMap latitude={latitude} longitude={longitude} setLatitude={setLatitude} setLongitude={setLongitude} data={data}/>
+      <InteractiveMap latitude={latitude} longitude={longitude} setLatitude={setLatitude} setLongitude={setLongitude} data={data} />
       <div className="m-2 p-4 pb-8 bg-green-100">
         <FormGeolocation
           latitude={latitude}
