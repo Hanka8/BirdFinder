@@ -6,20 +6,31 @@ import { LocationFormProps, RegionalStructureItem } from "../types";
 const LocationForm: React.FC<LocationFormProps> = ({
   latitude,
   longitude,
+  adressFromMap,
   setLatitude,
   setLongitude,
   refetchBirdData,
   setLoadingLocation,
+  setAdressFromMap,
 }) => {
   const [adress, setAdress] = useState<string>(latitude);
-  const [fetchedAdress, setFetchedAdress] = useState<string>("");
 
   const handleAdressChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAdress(e.target.value);
   };
 
   const getCoordinatesFromAdress = async (adress: string) => {
-    const url = `https://api.mapy.cz/v1/geocode?query=${adress}`;
+    const url = `https://api.mapy.cz/v1/geocode?query=${adress}&lang=en`;
+    const response = await fetch(url, {
+      headers: {
+        "X-Mapy-Api-Key": import.meta.env.VITE_API_KEY_MAPY,
+      },
+    });
+    return response.json();
+  };
+
+  const getAdressFromCoordinates = async () => {
+    const url = `https://api.mapy.cz/v1/rgeocode?lon=${longitude}&lat=${latitude}&lang=en`;
     const response = await fetch(url, {
       headers: {
         "X-Mapy-Api-Key": import.meta.env.VITE_API_KEY_MAPY,
@@ -56,15 +67,15 @@ const LocationForm: React.FC<LocationFormProps> = ({
       data.items[0].position.lat &&
       data.items[0].position.lon
     ) {
-      console.log(data.items[0].regionalStructure);
       if (data.items[0].regionalStructure) {
         let adressString = "";
-        data.items[0].regionalStructure.forEach((item: RegionalStructureItem) => {
-          adressString += item.name + ", ";
-        });
+        data.items[0].regionalStructure.forEach(
+          (item: RegionalStructureItem) => {
+            adressString += item.name + ", ";
+          }
+        );
         adressString = adressString.slice(0, -2);
-        console.log(adressString);
-        setFetchedAdress(adressString);
+        setAdressFromMap(adressString);
       }
       setLatitude(data.items[0].position.lat);
       setLongitude(data.items[0].position.lon);
@@ -73,18 +84,28 @@ const LocationForm: React.FC<LocationFormProps> = ({
     data,
     isLoading,
     error,
-    latitude,
-    longitude,
+    // latitude,
+    // longitude,
     setLatitude,
     setLongitude,
-    fetchedAdress,
+    adressFromMap,
+    setAdressFromMap,
   ]);
+
+  useEffect(() => {
+    if (!latitude || !longitude) return
+    getAdressFromCoordinates().then((data) => {
+      if (data && data.items[0].name && data.items[0].type) {
+        setAdressFromMap(data.items[0].name + data.items[0].type);
+      }
+    });
+  }, [latitude, longitude]);
 
   return (
     <div className="m-2 p-4 pb-8 bg-green-100">
       <h2 className="m-2 text-2xl text-green-700 text-center">Your location</h2>
-      {fetchedAdress && (
-        <p className="m-2 text-gray-800 text-center">{fetchedAdress}</p>
+      {adressFromMap && (
+        <p className="m-2 text-gray-800 text-center">{adressFromMap}</p>
       )}
       <form
         className="text-gray-800 rounded flex flex-col items-center gap-4 lg:flex-row"
