@@ -40,7 +40,6 @@ const Index: React.FC = () => {
   }, [isGeolocationManually]);
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
-    data: birdData,
     latitude,
     longitude,
   }) => {
@@ -53,7 +52,6 @@ const Index: React.FC = () => {
       }
     );
     const data = await response.json();
-    data.push(...birdData ?? []);
     return data;
   };
 
@@ -65,7 +63,7 @@ const Index: React.FC = () => {
     refetch: refetchBirdData,
   } = useQuery({
     queryKey: ["birds"],
-    queryFn: () => fetchBirdsNearby({ latitude, longitude, data }),
+    queryFn: () => fetchBirdsNearby({ latitude, longitude }),
   });
 
   // refetch data when coords are changed
