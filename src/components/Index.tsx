@@ -17,7 +17,7 @@ const Index: React.FC = () => {
   const [isLoadingLocation, setLoadingLocation] = useState<boolean>(true);
   const [geolocationErrorMessage, setGeolocationErrorMessage] =
     useState<string>("");
-
+  const [adressFromMap, setAdressFromMap] = useState<string>("");
 
   // get geolocation from browser on first render
   useEffect(() => {
@@ -76,10 +76,12 @@ const Index: React.FC = () => {
         <FormGeolocation
           latitude={latitude}
           longitude={longitude}
+          adressFromMap={adressFromMap}
           setLatitude={setLatitude}
           setLongitude={setLongitude}
           refetchBirdData={refetchBirdData}
           setLoadingLocation={setLoadingLocation}
+          setAdressFromMap={setAdressFromMap}
         />
       </div>
       {geolocationErrorMessage && (
