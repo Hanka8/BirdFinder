@@ -13,21 +13,83 @@ const LocationForm: React.FC<LocationFormProps> = ({
   setLoadingLocation,
   setAdressFromMap,
 }) => {
-    
-  // handle latitude/longitude input changes - allowing empty string for allowing user to clear the input
-  const handleLatitudeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "" || (Number(value) >= 0 && Number(value) <= 90)) {
-      setLatitude(value);
-    }
+  const [adress, setAdress] = useState<string>(latitude);
+
+  const handleAdressChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setAdress(e.target.value);
   };
 
-  const handleLongitudeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "" || (Number(value) >= -180 && Number(value) <= 180)) {
-      setLongitude(value);
-    }
+  const getCoordinatesFromAdress = async (adress: string) => {
+    const url = `https://api.mapy.cz/v1/geocode?query=${adress}&lang=en`;
+    const response = await fetch(url, {
+      headers: {
+        "X-Mapy-Api-Key": import.meta.env.VITE_API_KEY_MAPY,
+      },
+    });
+    return response.json();
   };
+
+  const getAdressFromCoordinates = async () => {
+    const url = `https://api.mapy.cz/v1/rgeocode?lon=${longitude}&lat=${latitude}&lang=en`;
+    const response = await fetch(url, {
+      headers: {
+        "X-Mapy-Api-Key": import.meta.env.VITE_API_KEY_MAPY,
+      },
+    });
+    return response.json();
+  };
+
+  const {
+    data,
+    error,
+    isLoading,
+    refetch: refetchCoords,
+  } = useQuery({
+    queryKey: ["coordinates"],
+    queryFn: () => getCoordinatesFromAdress(adress),
+  });
+
+  const handleSubmitAdress = (e: React.FormEvent) => {
+    e.preventDefault();
+    refetchCoords().then(() => {
+      refetchBirdData();
+    });
+    setLoadingLocation(false);
+  };
+
+  useEffect(() => {
+    if (!data) return;
+    if (isLoading) return;
+    if (error) return;
+
+    if (
+      data.items[0] &&
+      data.items[0].position.lat &&
+      data.items[0].position.lon
+    ) {
+      if (data.items[0].regionalStructure) {
+        let adressString = "";
+        data.items[0].regionalStructure.forEach(
+          (item: RegionalStructureItem) => {
+            adressString += item.name + ", ";
+          }
+        );
+        adressString = adressString.slice(0, -2);
+        setAdressFromMap(adressString);
+      }
+      setLatitude(data.items[0].position.lat);
+      setLongitude(data.items[0].position.lon);
+    }
+  }, [data, isLoading, error, setLatitude, setLongitude]);
+
+  useEffect(() => {
+    if (!latitude || !longitude) return;
+    getAdressFromCoordinates().then((data) => {
+      if (data && data.items[0].name && data.items[0].location) {
+        setAdressFromMap(data.items[0].name + data.items[0].location);
+      }
+    });
+  }, [latitude, longitude]);
 
   return (
     <div className="m-2 p-4 pb-8 bg-green-100">
