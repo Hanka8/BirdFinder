@@ -61,6 +61,7 @@ const Index: React.FC = () => {
   } = useQuery({
     queryKey: ["birds"],
     queryFn: () => fetchBirdsNearby({ latitude, longitude }),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // refetch data when coords are changed

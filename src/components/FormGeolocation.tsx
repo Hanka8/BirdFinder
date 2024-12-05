@@ -86,7 +86,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
     if (!latitude || !longitude) return;
     getAdressFromCoordinates().then((data) => {
       if (data && data.items[0].name && data.items[0].location) {
-        setAdressFromMap(data.items[0].name + data.items[0].location);
+        setAdressFromMap(`${data.items[0].name}, ${data.items[0].location}`);
       }
     });
   }, [latitude, longitude]);
