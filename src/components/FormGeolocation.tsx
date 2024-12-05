@@ -4,8 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { LocationFormProps, RegionalStructureItem } from "../types";
 
 const LocationForm: React.FC<LocationFormProps> = ({
-  // latitude,
-  // longitude,
+  latitude,
+  longitude,
   adressFromMap,
   setLatitude,
   setLongitude,
