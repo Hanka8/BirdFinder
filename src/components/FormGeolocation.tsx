@@ -95,8 +95,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
   useEffect(() => {
     if (!latitude || !longitude) return
     getAdressFromCoordinates().then((data) => {
-      if (data && data.items[0].name && data.items[0].type) {
-        setAdressFromMap(data.items[0].name + data.items[0].type);
+      if (data && data.items[0].name && data.items[0].location) {
+        setAdressFromMap(data.items[0].name + " " + data.items[0].location);
       }
     });
   }, [latitude, longitude]);
