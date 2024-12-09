@@ -1,17 +1,17 @@
 import { ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { LocationFormProps } from "../types";
+import { LocationFormProps, RegionalStructureItem } from "../types";
 
 const LocationForm: React.FC<LocationFormProps> = ({
   latitude,
   longitude,
-  geolocationManually,
+  adressFromMap,
   setLatitude,
   setLongitude,
   refetchBirdData,
-  setGeolocationManually,
   setLoadingLocation,
+  setAdressFromMap,
 }) => {
   const [adress, setAdress] = useState<string>(latitude);
 
@@ -20,7 +20,17 @@ const LocationForm: React.FC<LocationFormProps> = ({
   };
 
   const getCoordinatesFromAdress = async (adress: string) => {
-    const url = `https://api.mapy.cz/v1/geocode?query=${adress}`;
+    const url = `https://api.mapy.cz/v1/geocode?query=${adress}&lang=en`;
+    const response = await fetch(url, {
+      headers: {
+        "X-Mapy-Api-Key": import.meta.env.VITE_API_KEY_MAPY,
+      },
+    });
+    return response.json();
+  };
+
+  const getAdressFromCoordinates = async () => {
+    const url = `https://api.mapy.cz/v1/rgeocode?lon=${longitude}&lat=${latitude}&lang=en`;
     const response = await fetch(url, {
       headers: {
         "X-Mapy-Api-Key": import.meta.env.VITE_API_KEY_MAPY,
@@ -44,17 +54,10 @@ const LocationForm: React.FC<LocationFormProps> = ({
     refetchCoords().then(() => {
       refetchBirdData();
     });
-  };
-
-  const handleCheckBoxChange = () => {
-    setGeolocationManually(!geolocationManually);
-    if (geolocationManually) {
-      setLoadingLocation(false);
-    }
+    setLoadingLocation(false);
   };
 
   useEffect(() => {
-    if (!geolocationManually) return;
     if (!data) return;
     if (isLoading) return;
     if (error) return;
@@ -64,41 +67,40 @@ const LocationForm: React.FC<LocationFormProps> = ({
       data.items[0].position.lat &&
       data.items[0].position.lon
     ) {
+      if (data.items[0].regionalStructure) {
+        let adressString = "";
+        data.items[0].regionalStructure.forEach(
+          (item: RegionalStructureItem) => {
+            adressString += item.name + ", ";
+          }
+        );
+        adressString = adressString.slice(0, -2);
+        setAdressFromMap(adressString);
+      }
       setLatitude(data.items[0].position.lat);
       setLongitude(data.items[0].position.lon);
     }
+  }, [data, isLoading, error, setLatitude, setLongitude]);
 
-  }, [
-    geolocationManually,
-    data,
-    isLoading,
-    error,
-    latitude,
-    longitude,
-    setLatitude,
-    setLongitude,
-  ]);
+  useEffect(() => {
+    if (!latitude || !longitude) return;
+    getAdressFromCoordinates().then((data) => {
+      if (data && data.items[0].name && data.items[0].location) {
+        setAdressFromMap(`${data.items[0].name}, ${data.items[0].location}`);
+      }
+    });
+  }, [latitude, longitude]);
 
   return (
     <div className="m-2 p-4 pb-8 bg-green-100">
       <h2 className="m-2 text-2xl text-green-700 text-center">Your location</h2>
+      {adressFromMap && (
+        <p className="m-2 text-gray-800 text-center">{adressFromMap}</p>
+      )}
       <form
         className="text-gray-800 rounded flex flex-col items-center gap-4 lg:flex-row"
         onSubmit={handleSubmitAdress}
       >
-        <label className="inline-flex items-center cursor-pointer p-3">
-          <input
-            type="checkbox"
-            id="geolocationManually"
-            className="sr-only peer"
-            checked={geolocationManually}
-            onChange={handleCheckBoxChange}
-          />
-          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600 flex-shrink-0"></div>
-          <span className="ms-3 text-sm font-medium text-gray-700">
-            {geolocationManually ? "Get your location" : "Set adress manually" }
-          </span>
-        </label>
         <div className="m-2 flex flex-col relative">
           <input
             id="adress"
@@ -106,8 +108,9 @@ const LocationForm: React.FC<LocationFormProps> = ({
             placeholder="Adress"
             value={adress}
             onChange={handleAdressChange}
-            className={`w-60 focus:border-green-500 focus:ring focus:ring-green-300 focus:ring-opacity-50 focus:outline-none p-2 rounded text-gray-700 border border-gray-300 ${geolocationManually ? "bg-green-50" : "bg-gray-200"}`}
-            disabled={!geolocationManually}
+            className={
+              "w-60 focus:border-green-500 focus:ring focus:ring-green-300 focus:ring-opacity-50 focus:outline-none p-2 rounded text-gray-700 border border-gray-300 bg-green-50"
+            }
           />
           <label htmlFor="adress" className="absolute top-11 left-1 text-sm">
             Adress
@@ -115,9 +118,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
         </div>
         <button
           type="submit"
-          className={`m-2 p-2 w-60 rounded text-white ${geolocationManually ? "bg-green-500 hover:bg-green-700" : "bg-gray-600"}`}
+          className={"m-2 p-2 w-60 rounded text-white bg-green-600"}
           onClick={handleSubmitAdress}
-          disabled={!geolocationManually}
         >
           Search birds
         </button>

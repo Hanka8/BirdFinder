@@ -14,16 +14,14 @@ import { FetchBirdsNearby, Bird } from "../types";
 const Index: React.FC = () => {
   const [latitude, setLatitude] = useState<string>("");
   const [longitude, setLongitude] = useState<string>("");
-  const [isLoadingLocation, setLoadingLocation] = useState<boolean>(false);
-  const [isGeolocationManually, setGeolocationManually] =
-    useState<boolean>(false);
+  const [isLoadingLocation, setLoadingLocation] = useState<boolean>(true);
   const [geolocationErrorMessage, setGeolocationErrorMessage] =
     useState<string>("");
+  const [adressFromMap, setAdressFromMap] = useState<string>("");
 
-  // get geolocation from browser when isGeolocationManually is false
+  // get geolocation from browser on first render
   useEffect(() => {
-    if (!isGeolocationManually) {
-      setLoadingLocation(true);
+      if (!isLoadingLocation) return;
       getLocation()
         .then((location) => {
           if (typeof location === "string") {
@@ -36,8 +34,7 @@ const Index: React.FC = () => {
         .then(() => {
           setLoadingLocation(false);
         });
-    }
-  }, [isGeolocationManually]);
+  }, []);
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
     latitude,
@@ -64,12 +61,13 @@ const Index: React.FC = () => {
   } = useQuery({
     queryKey: ["birds"],
     queryFn: () => fetchBirdsNearby({ latitude, longitude }),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // refetch data when coords are changed
   useEffect(() => {
     refetchBirdData();
-  }, [latitude, longitude, isGeolocationManually, refetchBirdData]);
+  }, [latitude, longitude, refetchBirdData]);
 
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
@@ -79,12 +77,12 @@ const Index: React.FC = () => {
         <FormGeolocation
           latitude={latitude}
           longitude={longitude}
+          adressFromMap={adressFromMap}
           setLatitude={setLatitude}
           setLongitude={setLongitude}
-          geolocationManually={isGeolocationManually}
           refetchBirdData={refetchBirdData}
-          setGeolocationManually={setGeolocationManually}
           setLoadingLocation={setLoadingLocation}
+          setAdressFromMap={setAdressFromMap}
         />
       </div>
       {geolocationErrorMessage && (
