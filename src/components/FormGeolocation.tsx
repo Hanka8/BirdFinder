@@ -29,16 +29,6 @@ const LocationForm: React.FC<LocationFormProps> = ({
     return response.json();
   };
 
-  const getAdressFromCoordinates = async () => {
-    const url = `https://api.mapy.cz/v1/rgeocode?lon=${longitude}&lat=${latitude}&lang=en`;
-    const response = await fetch(url, {
-      headers: {
-        "X-Mapy-Api-Key": import.meta.env.VITE_API_KEY_MAPY,
-      },
-    });
-    return response.json();
-  };
-
   const {
     data,
     error,
@@ -80,16 +70,26 @@ const LocationForm: React.FC<LocationFormProps> = ({
       setLatitude(data.items[0].position.lat);
       setLongitude(data.items[0].position.lon);
     }
-  }, [data, isLoading, error, setLatitude, setLongitude]);
+  }, [data, isLoading, error, setLatitude, setLongitude, setAdressFromMap]);
 
   useEffect(() => {
+    const getAdressFromCoordinates = async () => {
+      const url = `https://api.mapy.cz/v1/rgeocode?lon=${longitude}&lat=${latitude}&lang=en`;
+      const response = await fetch(url, {
+        headers: {
+          "X-Mapy-Api-Key": import.meta.env.VITE_API_KEY_MAPY,
+        },
+      });
+      return response.json();
+    };
+
     if (!latitude || !longitude) return;
     getAdressFromCoordinates().then((data) => {
       if (data && data.items[0].name && data.items[0].location) {
         setAdressFromMap(`${data.items[0].name}, ${data.items[0].location}`);
       }
     });
-  }, [latitude, longitude]);
+  }, [latitude, longitude, setAdressFromMap]);
 
   return (
     <div className="m-2 p-4 pb-8 bg-green-100">

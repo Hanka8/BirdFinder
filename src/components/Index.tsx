@@ -34,7 +34,7 @@ const Index: React.FC = () => {
         .then(() => {
           setLoadingLocation(false);
         });
-  }, []);
+  }, [isLoadingLocation]);
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
     latitude,
