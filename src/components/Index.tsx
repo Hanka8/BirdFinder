@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useState, useRef } from "react";
 import { radius } from "../constants";
 import { getLocation } from "../functions/getLocation";
 import BirdCard from "./BirdCard";
@@ -7,7 +8,6 @@ import InteractiveMap from "./InteractiveMap";
 import FormGeolocation from "./FormGeolocation";
 import Loading from "./Loading";
 import Error from "./Error";
-
 import "../index.css";
 import { FetchBirdsNearby, Bird } from "../types";
 
@@ -18,23 +18,49 @@ const Index: React.FC = () => {
   const [geolocationErrorMessage, setGeolocationErrorMessage] =
     useState<string>("");
   const [adressFromMap, setAdressFromMap] = useState<string>("");
+  const hasFetchedGeolocation = useRef(false);
+  const navigate = useNavigate();
 
   // get geolocation from browser on first render
-  useEffect(() => {
-      if (!isLoadingLocation) return;
-      getLocation()
-        .then((location) => {
-          if (typeof location === "string") {
-            setGeolocationErrorMessage(location);
-            return;
-          }
-          setLatitude(location.latitude);
-          setLongitude(location.longitude);
-        })
-        .then(() => {
-          setLoadingLocation(false);
-        });
-  }, [isLoadingLocation]);
+   useEffect(() => {
+     // First check URL parameters
+     const pathParts = window.location.pathname.split("/");
+     if (pathParts[1] === "location" && pathParts[2] && pathParts[3]) {
+       setLatitude(pathParts[2]);
+       setLongitude(pathParts[3]);
+       setLoadingLocation(false);
+       return;
+     }
+
+     // If no URL params and haven't fetched geolocation yet, get it
+     if (!hasFetchedGeolocation.current) {
+       hasFetchedGeolocation.current = true;
+
+       getLocation()
+         .then((location) => {
+           if (typeof location === "string") {
+             setGeolocationErrorMessage(location);
+             return;
+           }
+           const lat = location.latitude.toString();
+           const lng = location.longitude.toString();
+
+           // Set coordinates
+           setLatitude(lat);
+           setLongitude(lng);
+
+           // Update URL
+           navigate({
+             to: "/location/$latitude/$longitude",
+             params: { latitude: lat, longitude: lng },
+             search: { latitude: lat, longitude: lng },
+           });
+         })
+         .finally(() => {
+           setLoadingLocation(false);
+         });
+     }
+   }, [navigate]);
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
     latitude,
@@ -61,7 +87,6 @@ const Index: React.FC = () => {
   } = useQuery({
     queryKey: ["birds"],
     queryFn: () => fetchBirdsNearby({ latitude, longitude }),
-    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // refetch data when coords are changed
@@ -72,19 +97,23 @@ const Index: React.FC = () => {
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
       <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
-      <InteractiveMap latitude={latitude} longitude={longitude} setLatitude={setLatitude} setLongitude={setLongitude} data={data} />
-      <div className="m-2 p-4 pb-8 bg-green-100">
-        <FormGeolocation
-          latitude={latitude}
-          longitude={longitude}
-          adressFromMap={adressFromMap}
-          setLatitude={setLatitude}
-          setLongitude={setLongitude}
-          refetchBirdData={refetchBirdData}
-          setLoadingLocation={setLoadingLocation}
-          setAdressFromMap={setAdressFromMap}
-        />
-      </div>
+      <InteractiveMap
+        latitude={latitude}
+        longitude={longitude}
+        setLatitude={setLatitude}
+        setLongitude={setLongitude}
+        data={data}
+      />
+      <FormGeolocation
+        latitude={latitude}
+        longitude={longitude}
+        adressFromMap={adressFromMap}
+        setLatitude={setLatitude}
+        setLongitude={setLongitude}
+        refetchBirdData={refetchBirdData}
+        setLoadingLocation={setLoadingLocation}
+        setAdressFromMap={setAdressFromMap}
+      />
       {geolocationErrorMessage && (
         <>
           <p>could not get your location, please input it manually</p>

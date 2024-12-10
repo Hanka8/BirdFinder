@@ -1,6 +1,7 @@
 import { ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { LocationFormProps, RegionalStructureItem } from "../types";
 
 const LocationForm: React.FC<LocationFormProps> = ({
@@ -14,6 +15,8 @@ const LocationForm: React.FC<LocationFormProps> = ({
   setAdressFromMap,
 }) => {
   const [adress, setAdress] = useState<string>(latitude);
+
+  const navigate = useNavigate();
 
   const handleAdressChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAdress(e.target.value);
@@ -69,8 +72,27 @@ const LocationForm: React.FC<LocationFormProps> = ({
       }
       setLatitude(data.items[0].position.lat);
       setLongitude(data.items[0].position.lon);
+
+      const roundedLat = data.items[0].position.lat.toFixed(2);
+      const roundedLon = data.items[0].position.lon.toFixed(2);
+
+      navigate({
+        to: `/location/${roundedLat}/${roundedLon}`,
+        params: {
+          latitude: roundedLat,
+          longitude: roundedLon,
+        },
+      });
     }
-  }, [data, isLoading, error, setLatitude, setLongitude, setAdressFromMap]);
+  }, [
+    data,
+    isLoading,
+    error,
+    setLatitude,
+    setLongitude,
+    setAdressFromMap,
+    navigate,
+  ]);
 
   useEffect(() => {
     const getAdressFromCoordinates = async () => {
@@ -92,7 +114,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
   }, [latitude, longitude, setAdressFromMap]);
 
   return (
-    <div className="m-2 p-4 pb-8 bg-green-100">
+    <div className="m-6 p-6 bg-green-100">
       <h2 className="m-2 text-2xl text-green-700 text-center">Your location</h2>
       {adressFromMap && (
         <p className="m-2 text-gray-800 text-center">{adressFromMap}</p>

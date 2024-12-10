@@ -11,4 +11,8 @@ export const Route = createRootRoute({
       <TanStackRouterDevtools />
     </QueryClientProvider>
   ),
+  validateSearch: (search: Record<string, unknown>) => ({
+    latitude: search.latitude as string,
+    longitude: search.longitude as string,
+  }),
 });
