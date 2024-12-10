@@ -37,11 +37,19 @@ const BirdCard: React.FC<BirdCardProps> = ({ bird }) => {
     <Link to={`/${birdSciNameTrimmed}`}>
       <div
         key={bird.speciesCode}
-        className="bg-green-50 border border-green-400 rounded-lg p-4 w-full max-w-sm mx-auto shadow-md hover:-translate-y-2 transition-transform duration-300 hover:bg-green-100"
+        className="bg-green-50 border border-green-400 rounded-lg w-full max-w-sm mx-auto shadow-md hover:-translate-y-2 transition-transform duration-300 hover:bg-green-100"
       >
-        <h3 className="text-xl font-semibold mb-3 text-gray-900">
-          {bird.comName}
-        </h3>
+        {birdData?.thumbnail && (
+          <div
+            className="w-full h-60 bg-cover bg-center rounded-t-lg"
+            style={{
+              backgroundImage: `url(${birdData?.thumbnail?.source})`,
+              backgroundSize: "cover",
+              backgroundPosition: "top",
+              backgroundRepeat: "no-repeat",
+            }}
+          ></div>
+        )}
         {isLoading && (
           <Loading
             loadingText="loading image"
@@ -49,25 +57,23 @@ const BirdCard: React.FC<BirdCardProps> = ({ bird }) => {
           />
         )}
         {error && <Error message={error.message} />}
-        {birdData && (
-          <img
-            className="rounded-lg mx-auto h-48 object-contain mb-3"
-            src={birdData.thumbnail?.source}
-            alt={birdData.title}
-          />
-        )}
-        <p className="text-gray-700">
-          <b className="text-gray-900">Count:</b> {bird.howMany}
-        </p>
-        <p className="text-gray-700">
-          <b className="text-gray-900">Location:</b> {bird.locName}
-        </p>
-        <p className="text-gray-700">
-          <b className="text-gray-900">Date:</b> {formattedDate}
-        </p>
-        <p className="text-gray-700">
-          <b className="text-gray-900">Time:</b> {formattedTime}
-        </p>
+        <div className="p-4">
+          <h3 className="text-xl font-semibold mb-2 text-gray-900">
+            {bird.comName}
+          </h3>
+          <p className="text-gray-700">
+            <b className="text-gray-900">Count:</b> {bird.howMany}
+          </p>
+          <p className="text-gray-700">
+            <b className="text-gray-900">Location:</b> {bird.locName}
+          </p>
+          <p className="text-gray-700">
+            <b className="text-gray-900">Date:</b> {formattedDate}
+          </p>
+          <p className="text-gray-700">
+            <b className="text-gray-900">Time:</b> {formattedTime}
+          </p>
+        </div>
       </div>
     </Link>
   );

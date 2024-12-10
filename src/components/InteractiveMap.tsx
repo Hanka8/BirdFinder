@@ -130,7 +130,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
             width: 2,
           }),
           fill: new Fill({
-            color: "rgba(0, 255, 0, 0.2)",
+            color: "rgba(0, 255, 0, 0.1)",
           }),
         })
       );
@@ -160,8 +160,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   }, [latitude, longitude, data]);
 
   return (
-    <div className="w-full h-32rem">
-      <div ref={mapRef} className="w-full h-32rem"></div>
+    <div className="w-full basis-2/5">
+      <div ref={mapRef} className="w-full h-screen sticky top-136"></div>
       <MapModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
