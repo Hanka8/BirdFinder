@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import MapModal from "./MapModal";
 import Map from "ol/Map.js";
 import OSM from "ol/source/OSM.js";
@@ -26,6 +27,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<string>("");
+
+  const navigate = useNavigate();
 
   const mapRef = useRef<HTMLDivElement | null>(null);
   const mapInstanceRef = useRef<Map | null>(null);
@@ -76,12 +79,20 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
           const clickedCoordinate = toLonLat(event.coordinate);
           setLatitude(clickedCoordinate[1].toFixed(2));
           setLongitude(clickedCoordinate[0].toFixed(2));
+
+          navigate({
+            to: `/location/${clickedCoordinate[1].toFixed(2)}/${clickedCoordinate[0].toFixed(2)}`,
+            params: {
+              latitude: clickedCoordinate[1].toFixed(2),
+              longitude: clickedCoordinate[0].toFixed(2),
+            },
+          });
         }
       });
 
       mapInstanceRef.current = map;
     }
-  }, [longitude, latitude, setLatitude, setLongitude]);
+  }, [longitude, latitude, setLatitude, setLongitude, navigate]);
 
 
 

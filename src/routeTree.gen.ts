@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as LocationLatitudeLongitudeImport } from './routes/location.$latitude.$longitude'
 
 // Create Virtual Routes
 
@@ -30,6 +31,11 @@ const IndexLazyRoute = IndexLazyImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+
+const LocationLatitudeLongitudeRoute = LocationLatitudeLongitudeImport.update({
+  path: '/location/$latitude/$longitude',
+  getParentRoute: () => rootRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -49,6 +55,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BirdLazyImport
       parentRoute: typeof rootRoute
     }
+    '/location/$latitude/$longitude': {
+      id: '/location/$latitude/$longitude'
+      path: '/location/$latitude/$longitude'
+      fullPath: '/location/$latitude/$longitude'
+      preLoaderRoute: typeof LocationLatitudeLongitudeImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -57,6 +70,7 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   BirdLazyRoute,
+  LocationLatitudeLongitudeRoute,
 })
 
 /* prettier-ignore-end */
@@ -68,7 +82,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/$bird"
+        "/$bird",
+        "/location/$latitude/$longitude"
       ]
     },
     "/": {
@@ -76,6 +91,9 @@ export const routeTree = rootRoute.addChildren({
     },
     "/$bird": {
       "filePath": "$bird.lazy.tsx"
+    },
+    "/location/$latitude/$longitude": {
+      "filePath": "location.$latitude.$longitude.tsx"
     }
   }
 }

@@ -29,8 +29,6 @@ const BirdPage = () => {
     queryFn: () => fetchBirdData(birdName),
   });
 
-  console.log(birdData);
-
   return (
     <div className="p-6 bg-green-50 min-h-screen">
       {isLoading && <p className="text-gray-500">Loading...</p>}
