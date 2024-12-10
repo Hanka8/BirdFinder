@@ -21,19 +21,19 @@ const Index: React.FC = () => {
 
   // get geolocation from browser on first render
   useEffect(() => {
-      if (!isLoadingLocation) return;
-      getLocation()
-        .then((location) => {
-          if (typeof location === "string") {
-            setGeolocationErrorMessage(location);
-            return;
-          }
-          setLatitude(location.latitude);
-          setLongitude(location.longitude);
-        })
-        .then(() => {
-          setLoadingLocation(false);
-        });
+    if (!isLoadingLocation) return;
+    getLocation()
+      .then((location) => {
+        if (typeof location === "string") {
+          setGeolocationErrorMessage(location);
+          return;
+        }
+        setLatitude(location.latitude);
+        setLongitude(location.longitude);
+      })
+      .then(() => {
+        setLoadingLocation(false);
+      });
   }, [isLoadingLocation]);
 
   const fetchBirdsNearby: FetchBirdsNearby = async ({
@@ -69,22 +69,35 @@ const Index: React.FC = () => {
     refetchBirdData();
   }, [latitude, longitude, refetchBirdData]);
 
+  // adress from map in better format
+  const adressFromMapFormatted = adressFromMap.split(",");
+
   return (
-    <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
-      <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
-      <InteractiveMap latitude={latitude} longitude={longitude} setLatitude={setLatitude} setLongitude={setLongitude} data={data} />
-      <div className="m-2 p-4 pb-8 bg-green-100">
+    <div className="text-gray-800 bg-green-50 flex flex-col min-h-screen">
+      <div className="flex justify-between items-center">
+        <h3 className="basis-1/4 text-3xl font-bold m-8 text-green-700">Birdspotting</h3>
         <FormGeolocation
           latitude={latitude}
           longitude={longitude}
-          adressFromMap={adressFromMap}
           setLatitude={setLatitude}
           setLongitude={setLongitude}
           refetchBirdData={refetchBirdData}
           setLoadingLocation={setLoadingLocation}
           setAdressFromMap={setAdressFromMap}
         />
+        <div className="basis-1/4 text-l text-right font-bold m-8 text-green-700">
+          {adressFromMapFormatted.map((item) => (
+            <p>{item}</p>
+          ))}
+        </div>
       </div>
+      <InteractiveMap
+        latitude={latitude}
+        longitude={longitude}
+        setLatitude={setLatitude}
+        setLongitude={setLongitude}
+        data={data}
+      />
       {geolocationErrorMessage && (
         <>
           <p>could not get your location, please input it manually</p>
