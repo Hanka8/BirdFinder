@@ -94,25 +94,34 @@ const Index: React.FC = () => {
     refetchBirdData();
   }, [latitude, longitude, refetchBirdData]);
 
+  // adress from map in better format
+  const adressFromMapFormatted = adressFromMap.split(",");
+
   return (
-    <div className="text-gray-800 bg-green-50 flex flex-col items-center min-h-screen">
-      <h3 className="text-5xl m-8 text-green-700">Birds around you</h3>
+    <div className="text-gray-800 bg-green-50 flex flex-col min-h-screen">
+      <div className="flex justify-between items-center">
+        <h3 className="basis-1/4 text-3xl font-bold m-8 text-green-700">Birdspotting</h3>
+        <FormGeolocation
+          latitude={latitude}
+          longitude={longitude}
+          setLatitude={setLatitude}
+          setLongitude={setLongitude}
+          refetchBirdData={refetchBirdData}
+          setLoadingLocation={setLoadingLocation}
+          setAdressFromMap={setAdressFromMap}
+        />
+        <div className="basis-1/4 text-l text-right font-bold m-8 text-green-700">
+          {adressFromMapFormatted.map((item) => (
+            <p>{item}</p>
+          ))}
+        </div>
+      </div>
       <InteractiveMap
         latitude={latitude}
         longitude={longitude}
         setLatitude={setLatitude}
         setLongitude={setLongitude}
         data={data}
-      />
-      <FormGeolocation
-        latitude={latitude}
-        longitude={longitude}
-        adressFromMap={adressFromMap}
-        setLatitude={setLatitude}
-        setLongitude={setLongitude}
-        refetchBirdData={refetchBirdData}
-        setLoadingLocation={setLoadingLocation}
-        setAdressFromMap={setAdressFromMap}
       />
       {geolocationErrorMessage && (
         <>

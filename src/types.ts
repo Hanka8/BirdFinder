@@ -6,7 +6,6 @@ export type FetchBirdsNearby = (arg0: {
 export type LocationFormProps = {
   latitude: string;
   longitude: string;
-  adressFromMap: string;
   setAdressFromMap: (value: string) => void;
   refetchBirdData: () => void;
   setLoadingLocation: (value: boolean) => void;
