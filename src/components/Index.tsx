@@ -130,6 +130,9 @@ const Index: React.FC = () => {
           {isLoadingData ||
             (isFetching && <Loading loadingText="loading birds" />)}
           {error && <Error message={error.message} />}
+          {(data && data.length === 0 && !isLoadingData && !isLoadingLocation) && (
+            <p className="m-5">No birds found in the area</p>
+          )}
           {data && (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 m-5">
               {data.length > 0 &&

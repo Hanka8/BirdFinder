@@ -1,4 +1,3 @@
-- CORS policy on APIs
 
 ## takeaways
 
