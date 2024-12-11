@@ -161,7 +161,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
   return (
     <div className="w-full basis-2/5">
-      <div ref={mapRef} className="w-full h-screen sticky top-136"></div>
+      <div ref={mapRef} className="w-full h-50vh md:h-screen md:fixed md:top-136"></div>
       <MapModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

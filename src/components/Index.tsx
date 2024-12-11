@@ -100,7 +100,7 @@ const Index: React.FC = () => {
   return (
     <div className="text-gray-800 bg-green-50 flex flex-col min-h-screen">
       <div className="flex justify-between items-center border-b border-gray-300 sticky top-0 z-10 bg-green-50">
-        <h3 className="basis-1/4 text-3xl font-bold m-8 text-green-700">
+        <h3 className="hidden sm:flex text-xl md:text-3xl font-bold m-4 text-green-700">
           Birdspotting
         </h3>
         <FormGeolocation
@@ -112,32 +112,32 @@ const Index: React.FC = () => {
           setLoadingLocation={setLoadingLocation}
           setAdressFromMap={setAdressFromMap}
         />
-        <div className="basis-1/4 text-l text-right font-bold m-8 text-green-700">
+        <div className="text-sm md:text-md lg:text-lg text-right font-bold m-4 ml-0 text-green-700">
           {adressFromMapFormatted.map((item) => (
             <p key={item}>{item}</p>
           ))}
         </div>
       </div>
-      <div className="flex">
+      <div className="flex flex-col-reverse md:flex-row">
         <div className="basis-3/5">
-        {geolocationErrorMessage && (
-          <>
-            <p>could not get your location, please input it manually</p>
-            <p>{geolocationErrorMessage}</p>
-          </>
-        )}
-        {isLoadingLocation && <Loading loadingText="loading geolocation" />}
-        {isLoadingData ||
-          (isFetching && <Loading loadingText="loading birds" />)}
-        {error && <Error message={error.message} />}
-        {data && (
-          <div className="grid  gap-6 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 m-5">
-            {data.length > 0 &&
-              data.map((bird: Bird) => (
-                <BirdCard key={bird.speciesCode} bird={bird} />
-              ))}
-          </div>
-        )}
+          {geolocationErrorMessage && (
+            <>
+              <p>could not get your location, please input it manually</p>
+              <p>{geolocationErrorMessage}</p>
+            </>
+          )}
+          {isLoadingLocation && <Loading loadingText="loading geolocation" />}
+          {isLoadingData ||
+            (isFetching && <Loading loadingText="loading birds" />)}
+          {error && <Error message={error.message} />}
+          {data && (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 m-5">
+              {data.length > 0 &&
+                data.map((bird: Bird) => (
+                  <BirdCard key={bird.speciesCode} bird={bird} />
+                ))}
+            </div>
+          )}
         </div>
         <InteractiveMap
           latitude={latitude}

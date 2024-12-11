@@ -118,7 +118,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
       className="text-gray-800 w-full max-w-96"
       onSubmit={handleSubmitAdress}
     >
-      <div className="flex items-center relative filter drop-shadow-md">
+      <div className="flex items-center relative filter drop-shadow-md m-4">
         <input
           id="adress"
           type="text"

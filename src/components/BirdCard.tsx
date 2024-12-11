@@ -2,11 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { format, parseISO } from "date-fns";
 import { Link } from "@tanstack/react-router";
 import { FetchBirdData, BirdCardProps } from "../types";
+import { IoLocationOutline } from "react-icons/io5";
+import { IoTimeOutline } from "react-icons/io5";
 import Loading from "./Loading";
 import Error from "./Error";
 
 const BirdCard: React.FC<BirdCardProps> = ({ bird }) => {
-  const formattedDate = format(parseISO(bird.obsDt), "d MMMM yyyy");
+  const formattedDate = format(parseISO(bird.obsDt), "d.MM.");
   const formattedTime = format(parseISO(bird.obsDt), "H:mm");
 
   const fetchBirdData: FetchBirdData = async (birdName) => {
@@ -37,18 +39,24 @@ const BirdCard: React.FC<BirdCardProps> = ({ bird }) => {
     <Link to={`/${birdSciNameTrimmed}`}>
       <div
         key={bird.speciesCode}
-        className="bg-green-50 border border-green-400 rounded-lg w-full max-w-sm mx-auto shadow-md hover:-translate-y-2 transition-transform duration-300 hover:bg-green-100"
+        className="bg-white border rounded-lg w-full max-w-sm mx-auto shadow-md hover:-translate-y-2 transition-transform duration-300"
       >
         {birdData?.thumbnail && (
           <div
-            className="w-full h-60 bg-cover bg-center rounded-t-lg"
+            className="w-full h-60 bg-cover bg-center rounded-t-lg relative"
             style={{
               backgroundImage: `url(${birdData?.thumbnail?.source})`,
               backgroundSize: "cover",
               backgroundPosition: "top",
               backgroundRepeat: "no-repeat",
             }}
-          ></div>
+          >
+            {bird.howMany > 1 && (
+                <p className="absolute right-2 top-2 bg-white p-1 rounded-full flex items-center justify-center font-semibold w-8 h-8 shadow-md">
+                {bird.howMany}
+                </p>
+            )}
+          </div>
         )}
         {isLoading && (
           <Loading
@@ -58,20 +66,16 @@ const BirdCard: React.FC<BirdCardProps> = ({ bird }) => {
         )}
         {error && <Error message={error.message} />}
         <div className="p-4">
-          <h3 className="text-xl font-semibold mb-2 text-gray-900">
+          <h3 className="text-lg font-semibold mb-2 text-gray-900">
             {bird.comName}
           </h3>
-          <p className="text-gray-700">
-            <b className="text-gray-900">Count:</b> {bird.howMany}
+          <p className="flex items-center gap-1 text-gray-700">
+            <IoTimeOutline size={20} />
+            {formattedTime}, {formattedDate}
           </p>
-          <p className="text-gray-700">
-            <b className="text-gray-900">Location:</b> {bird.locName}
-          </p>
-          <p className="text-gray-700">
-            <b className="text-gray-900">Date:</b> {formattedDate}
-          </p>
-          <p className="text-gray-700">
-            <b className="text-gray-900">Time:</b> {formattedTime}
+          <p className="flex items-start gap-1 text-gray-700 mt-2 italic">
+            <IoLocationOutline size={20} className="shrink-0"/>
+            {bird.locName}
           </p>
         </div>
       </div>
