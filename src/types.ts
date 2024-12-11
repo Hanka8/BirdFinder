@@ -94,7 +94,7 @@ export type InteractiveMapProps = {
   longitude: string;
   setLatitude: (value: string) => void;
   setLongitude: (value: string) => void;
-  data: Bird[] | undefined;
+  data?: Bird[];  // Add this line with the correct type
 };
 
 export type MapModalProps = {

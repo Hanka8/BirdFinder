@@ -16,6 +16,7 @@ import { toLonLat } from "ol/proj";
 import { InteractiveMapProps } from "../types";
 import { radius } from "../constants";
 import birdIcon from "../assets/bird-ico.svg";
+import mapPin from "../assets/map-pin.svg";
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({
   latitude,
@@ -24,7 +25,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   setLongitude,
   data,
 }) => {
-
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<string>("");
 
@@ -94,8 +94,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
     }
   }, [longitude, latitude, setLatitude, setLongitude, navigate]);
 
-
-
   useEffect(() => {
     if (vectorSourceRef.current && latitude && longitude) {
       const coordinates = fromLonLat([
@@ -113,8 +111,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
       marker.setStyle(
         new Style({
           image: new Icon({
-            src: "https://openlayers.org/en/latest/examples/data/icon.png",
-            scale: 0.75,
+            src: mapPin,
+            scale: 1,
           }),
         })
       );
@@ -127,7 +125,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         new Style({
           stroke: new Stroke({
             color: "rgba(0, 128, 0, 0.8)",
-            width: 2,
+            width: 1,
           }),
           fill: new Fill({
             color: "rgba(0, 255, 0, 0.1)",
@@ -135,33 +133,54 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
         })
       );
 
-      vectorSource.addFeatures([marker, circleFeature]);
-
       data?.forEach((bird) => {
         const birdCoordinates = fromLonLat([bird.lng, bird.lat]);
-        const birdMarker = new Feature({
-          geometry: new Point(birdCoordinates),
-        });
+        let existingFeature: Feature<Point> | undefined;
 
-        birdMarker.setStyle(
-          new Style({
-            image: new Icon({
-              src: birdIcon,
-              scale: 0.75,
-              color: "rgba(255, 0, 0, 0.8)",
-            }),
-          })
+        vectorSource.forEachFeatureIntersectingExtent(
+          new Point(birdCoordinates).getExtent(),
+          (feature) => {
+            existingFeature = feature as Feature<Point>;
+          }
         );
 
-        birdMarker.set("description", `Bird Name: ${bird.comName}`);
-        vectorSource.addFeature(birdMarker);
+        if (existingFeature) {
+          const existingDescription = existingFeature.get("description");
+          existingFeature.set(
+            "description",
+            `${existingDescription}, Bird Name: ${bird.comName}`
+          );
+        } else {
+          const birdMarker = new Feature({
+            geometry: new Point(birdCoordinates),
+            description: `Bird Name: ${bird.comName}`,
+          });
+
+          birdMarker.setStyle(
+            new Style({
+              image: new Icon({
+                src: birdIcon,
+                scale: 0.75,
+                color: "rgba(255, 0, 0, 0.8)",
+              }),
+            })
+          );
+
+          birdMarker.set("description", `Bird Name: ${bird.comName}`);
+          vectorSource.addFeature(birdMarker);
+        }
       });
+
+      vectorSource.addFeatures([marker, circleFeature]);
     }
   }, [latitude, longitude, data]);
 
   return (
     <div className="w-full basis-2/5">
-      <div ref={mapRef} className="w-full h-50vh md:h-screen md:fixed md:top-136"></div>
+      <div
+        ref={mapRef}
+        className="w-full h-50vh md:h-screen md:fixed md:top-136"
+      ></div>
       <MapModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
