@@ -1,15 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { radius } from "../constants";
 import { getLocation } from "../functions/getLocation";
 import BirdCard from "./BirdCard";
 import InteractiveMap from "./InteractiveMap";
 import FormGeolocation from "./FormGeolocation";
 import Loading from "./Loading";
+import NoBirds from "./NoBirds";
 import Error from "./Error";
 import "../index.css";
-import { FetchBirdsNearby, Bird } from "../types";
+import { FetchBirdsNearby, Bird, FetchBirdData } from "../types";
 
 const Index: React.FC = () => {
   const [latitude, setLatitude] = useState<string>("");
@@ -78,6 +79,19 @@ const Index: React.FC = () => {
     return data;
   };
 
+  const fetchBirdData: FetchBirdData = async (birdName) => {
+    try {
+      const response = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${birdName}`
+      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching bird data from Wikipedia:", error);
+      return {};
+    }
+  };
+
   const {
     data,
     error,
@@ -88,6 +102,27 @@ const Index: React.FC = () => {
     queryKey: ["birds"],
     queryFn: () => fetchBirdsNearby({ latitude, longitude }),
   });
+
+  // Add Wikipedia data queries
+  const wikiQueries = data?.map((bird) => ({
+    queryKey: ["birdData", bird.sciName],
+    queryFn: () => fetchBirdData(bird.sciName),
+  })) || [];
+
+  const wikiResults = useQueries({
+    queries: wikiQueries,
+  });
+
+  // Create a map for faster lookups
+  const wikiDataMap = useMemo(() => {
+    const map = new Map();
+    wikiResults.forEach((result) => {
+      if (result.data?.title) {
+        map.set(result.data.title.toUpperCase(), result.data);
+      }
+    });
+    return map;
+  }, [wikiResults]);
 
   // refetch data when coords are changed
   useEffect(() => {
@@ -119,26 +154,34 @@ const Index: React.FC = () => {
         </div>
       </div>
       <div className="flex flex-col-reverse md:flex-row">
-        <div className="basis-3/5">
+        <div className="basis-1/2">
           {geolocationErrorMessage && (
             <>
               <p>could not get your location, please input it manually</p>
               <p>{geolocationErrorMessage}</p>
             </>
           )}
-          {isLoadingLocation && <Loading loadingText="loading geolocation" />}
-          {isLoadingData ||
-            (isFetching && <Loading loadingText="loading birds" />)}
+          {isLoadingLocation && <Loading animationType="cylon" />}
+          {isLoadingData || (isFetching && <Loading animationType="cylon" />)}
           {error && <Error message={error.message} />}
-          {(data && data.length === 0 && !isLoadingData && !isLoadingLocation) && (
-            <p className="m-5">No birds found in the area</p>
-          )}
+          {data &&
+            data.length === 0 &&
+            !isLoadingData &&
+            !isLoadingLocation && (
+              <NoBirds />
+            )}
           {data && (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 m-5">
               {data.length > 0 &&
-                data.map((bird: Bird) => (
-                  <BirdCard key={bird.speciesCode} bird={bird} />
-                ))}
+                data.map((bird: Bird, index: number) => (
+                  <BirdCard
+                    key={bird.speciesCode}
+                    bird={bird}
+                    birdData={wikiResults[index]?.data}
+                    isLoading={wikiResults[index]?.isLoading || false}
+                    error={wikiResults[index]?.error as Error}
+                  />
+              ))}
             </div>
           )}
         </div>
@@ -148,6 +191,7 @@ const Index: React.FC = () => {
           setLatitude={setLatitude}
           setLongitude={setLongitude}
           data={data}
+          wikiDataMap={wikiDataMap}
         />
       </div>
     </div>

@@ -26,6 +26,9 @@ export type Bird = {
 
 export type BirdCardProps = {
   bird: Bird;
+  birdData?: BirdData;
+  isLoading: boolean;
+  error?: Error;
 };
 
 export interface BirdData {
@@ -81,27 +84,53 @@ export interface BirdData {
 export type FetchBirdData = (birdName: string) => Promise<BirdData>;
 
 export type LoadingProps = {
-  loadingText: string;
-  animationType?: "balls" | "bars" | "bubbles" | "spin" | "cylon"  | "spin" | "spinningBubbles" | "spokes";
+  animationType?:
+    | "balls"
+    | "bars"
+    | "bubbles"
+    | "spin"
+    | "cylon"
+    | "spin"
+    | "spinningBubbles"
+    | "spokes";
 };
 
 export type ErrorProps = {
   message: string;
 };
 
+export interface WikiResult {
+  status: string;
+  fetchStatus: string;
+  isPending: boolean;
+  isError: boolean;
+  isFetched: boolean;
+  isFetchedAfterMount: boolean;
+  isFetching: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  data?: BirdData;
+}
+
 export type InteractiveMapProps = {
   latitude: string;
   longitude: string;
   setLatitude: (value: string) => void;
   setLongitude: (value: string) => void;
-  data?: Bird[];  // Add this line with the correct type
+  data?: Bird[];
+  wikiDataMap: Map<string, BirdData>;
+};
+
+export type BirdPopupProps = {
+  birds: Bird[];
+  wikiDataMap: Map<string, BirdData>;
 };
 
 export type MapModalProps = {
   isOpen: boolean;
   onClose: () => void;
   content: string;
-}
+};
 
 export type RegionalStructureItem = {
   name: string;

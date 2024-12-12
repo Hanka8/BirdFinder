@@ -1,19 +1,17 @@
-import { LoadingProps } from '../types';
-import ReactLoading from 'react-loading';
+import { LoadingProps } from "../types";
+import ReactLoading from "react-loading";
 
-const Loading: React.FC<LoadingProps> = ({loadingText, animationType}) => {
-
-    return (
-      <div className="grid place-items-center gap-10 text-green-700">
-        <ReactLoading
-          type={animationType || "bars"}
-          color={"#15803d"}
-          height={"35%"}
-          width={"35%"}
-        />
-        <p>{loadingText}</p>
-      </div>
-    );
+const Loading: React.FC<LoadingProps> = ({ animationType }) => {
+  return (
+    <div className="grid place-items-center text-green-700">
+      <ReactLoading
+        type={animationType || "bars"}
+        color={"#15803d"}
+        height={"35%"}
+        width={"35%"}
+      />
+    </div>
+  );
 };
 
 export default Loading;

@@ -13,3 +13,15 @@
 .h-50vh {
   height: 50vh;
 }
+
+.leaflet-popup-content {
+  width: 250px !important;
+  margin: 0 0 13px 0  !important;
+}
+
+@media screen and (max-width: 768px) {
+  .leaflet-popup-content {
+    width: 150px !important;
+  }
+  
+}

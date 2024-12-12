@@ -1,22 +1,63 @@
-import { useState, useEffect, useRef } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import MapModal from "./MapModal";
-import Map from "ol/Map.js";
-import OSM from "ol/source/OSM.js";
-import TileLayer from "ol/layer/Tile.js";
-import View from "ol/View.js";
-import { fromLonLat } from "ol/proj";
-import VectorLayer from "ol/layer/Vector";
-import VectorSource from "ol/source/Vector";
-import Feature from "ol/Feature";
-import Point from "ol/geom/Point";
-import Circle from "ol/geom/Circle";
-import { Icon, Style, Stroke, Fill } from "ol/style";
-import { toLonLat } from "ol/proj";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Circle,
+  Popup,
+  useMapEvents,
+} from "react-leaflet";
+import { Icon, Map as LeafletMap } from "leaflet";
+import BirdPopup from "./BirdPopup";
 import { InteractiveMapProps } from "../types";
 import { radius } from "../constants";
+import "leaflet/dist/leaflet.css";
+
+// Fix for default marker icons in Leaflet
+import markerIcon from "../assets/map-pin.svg";
 import birdIcon from "../assets/bird-ico.svg";
-import mapPin from "../assets/map-pin.svg";
+
+const defaultIcon = new Icon({
+  iconUrl: markerIcon,
+  iconSize: [35, 41],
+});
+
+const customBirdIcon = new Icon({
+  iconUrl: birdIcon,
+  iconSize: [25, 25],
+  iconAnchor: [12, 12],
+});
+
+const MapEvents: React.FC<{
+  setLatitude: (lat: string) => void;
+  setLongitude: (lng: string) => void;
+  shouldUpdateCenter: React.MutableRefObject<boolean>;
+}> = ({ setLatitude, setLongitude, shouldUpdateCenter }) => {
+  const navigate = useNavigate();
+
+  useMapEvents({
+    click: (e) => {
+      const { lat, lng } = e.latlng;
+      const latStr = lat.toFixed(2);
+      const lngStr = lng.toFixed(2);
+
+      shouldUpdateCenter.current = false;
+      setLatitude(latStr);
+      setLongitude(lngStr);
+
+      navigate({
+        to: `/location/${latStr}/${lngStr}`,
+        params: {
+          latitude: latStr,
+          longitude: lngStr,
+        },
+      });
+    },
+  });
+
+  return null;
+};
 
 const InteractiveMap: React.FC<InteractiveMapProps> = ({
   latitude,
@@ -24,168 +65,131 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   setLatitude,
   setLongitude,
   data,
+  wikiDataMap: wikiResults,
 }) => {
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [modalContent, setModalContent] = useState<string>("");
+  const mapRef = useRef<LeafletMap | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const shouldUpdateCenter = useRef<boolean>(true);
+  const position = useMemo(
+    (): [number, number] => [
+      parseFloat(latitude || "0"),
+      parseFloat(longitude || "0"),
+    ],
+    [latitude, longitude]
+  );
 
-  const navigate = useNavigate();
-
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstanceRef = useRef<Map | null>(null);
-  const vectorSourceRef = useRef<VectorSource | null>(null);
-
+  // Add resize observer
   useEffect(() => {
-    if (!latitude || !longitude) return;
-    if (!mapInstanceRef.current && mapRef.current) {
-      const coordinates = fromLonLat([
-        parseFloat(longitude),
-        parseFloat(latitude),
-      ]);
+    if (!containerRef.current) return;
 
-      const vectorSource = new VectorSource();
-      vectorSourceRef.current = vectorSource;
-
-      const vectorLayer = new VectorLayer({
-        source: vectorSource,
-      });
-
-      const map = new Map({
-        target: mapRef.current,
-        layers: [
-          new TileLayer({
-            source: new OSM(),
-          }),
-          vectorLayer,
-        ],
-        view: new View({
-          center: coordinates,
-          zoom: 12,
-        }),
-      });
-
-      map.on("singleclick", (event) => {
-        const clickedFeature = map.forEachFeatureAtPixel(
-          event.pixel,
-          (feature) => feature
-        );
-
-        if (clickedFeature) {
-          const description = clickedFeature.get("description");
-          if (description) {
-            setModalContent(description);
-            setModalOpen(true);
-          }
-        } else {
-          const clickedCoordinate = toLonLat(event.coordinate);
-          setLatitude(clickedCoordinate[1].toFixed(2));
-          setLongitude(clickedCoordinate[0].toFixed(2));
-
-          navigate({
-            to: `/location/${clickedCoordinate[1].toFixed(2)}/${clickedCoordinate[0].toFixed(2)}`,
-            params: {
-              latitude: clickedCoordinate[1].toFixed(2),
-              longitude: clickedCoordinate[0].toFixed(2),
-            },
-          });
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+        if (shouldUpdateCenter.current) {
+          mapRef.current.setView(position, 12);
         }
-      });
+      }
+    });
 
-      mapInstanceRef.current = map;
-    }
-  }, [longitude, latitude, setLatitude, setLongitude, navigate]);
+    resizeObserver.observe(containerRef.current);
 
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [position]);
+
+  // Existing useEffect for position changes
   useEffect(() => {
-    if (vectorSourceRef.current && latitude && longitude) {
-      const coordinates = fromLonLat([
-        parseFloat(longitude),
-        parseFloat(latitude),
-      ]);
-
-      const vectorSource = vectorSourceRef.current;
-      vectorSource.clear();
-
-      const marker = new Feature({
-        geometry: new Point(coordinates),
-      });
-
-      marker.setStyle(
-        new Style({
-          image: new Icon({
-            src: mapPin,
-            scale: 1,
-          }),
-        })
-      );
-
-      const circleFeature = new Feature({
-        geometry: new Circle(coordinates, radius * 1000),
-      });
-
-      circleFeature.setStyle(
-        new Style({
-          stroke: new Stroke({
-            color: "rgba(0, 128, 0, 0.8)",
-            width: 1,
-          }),
-          fill: new Fill({
-            color: "rgba(0, 255, 0, 0.1)",
-          }),
-        })
-      );
-
-      data?.forEach((bird) => {
-        const birdCoordinates = fromLonLat([bird.lng, bird.lat]);
-        let existingFeature: Feature<Point> | undefined;
-
-        vectorSource.forEachFeatureIntersectingExtent(
-          new Point(birdCoordinates).getExtent(),
-          (feature) => {
-            existingFeature = feature as Feature<Point>;
-          }
-        );
-
-        if (existingFeature) {
-          const existingDescription = existingFeature.get("description");
-          existingFeature.set(
-            "description",
-            `${existingDescription}, Bird Name: ${bird.comName}`
-          );
-        } else {
-          const birdMarker = new Feature({
-            geometry: new Point(birdCoordinates),
-            description: `Bird Name: ${bird.comName}`,
-          });
-
-          birdMarker.setStyle(
-            new Style({
-              image: new Icon({
-                src: birdIcon,
-                scale: 0.75,
-                color: "rgba(255, 0, 0, 0.8)",
-              }),
-            })
-          );
-
-          birdMarker.set("description", `Bird Name: ${bird.comName}`);
-          vectorSource.addFeature(birdMarker);
-        }
-      });
-
-      vectorSource.addFeatures([marker, circleFeature]);
+    if (mapRef.current && shouldUpdateCenter.current) {
+      mapRef.current.invalidateSize();
+      mapRef.current.setView(position, 12);
     }
-  }, [latitude, longitude, data]);
+    shouldUpdateCenter.current = true; // Reset for next update
+  }, [position]);
+
+  if (!latitude || !longitude) return null;
 
   return (
-    <div className="w-full basis-2/5">
+    <div className="w-full md:w-1/2 md:ml-auto">
       <div
-        ref={mapRef}
-        className="w-full h-50vh md:h-screen md:fixed md:top-136"
-      ></div>
-      <MapModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        content={modalContent}
-      />
+        ref={containerRef}
+        className="w-full h-50vh md:h-screen md:fixed md:right-0 md:top-136 md:w-1/2"
+      >
+        <MapContainer
+          center={position}
+          zoom={12}
+          style={{ height: "100%", width: "100%" }}
+          ref={mapRef}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          <MapEvents
+            setLatitude={setLatitude}
+            setLongitude={setLongitude}
+            shouldUpdateCenter={shouldUpdateCenter}
+          />
+
+          {/* Main marker for selected location */}
+          <Marker position={position} icon={defaultIcon} />
+
+          {/* Circle for radius */}
+          <Circle
+            center={position}
+            radius={radius * 1000}
+            pathOptions={{
+              color: "rgba(0, 128, 0, 0.8)",
+              fillColor: "rgba(0, 255, 0)",
+              fillOpacity: 0.1,
+            }}
+          />
+
+          {/* Bird markers */}
+          {data
+            ?.reduce(
+              (markers, bird, index) => {
+                // Find existing marker at this position
+                const existingMarkerIndex = markers.findIndex(
+                  (marker) =>
+                    marker.position[0] === bird.lat &&
+                    marker.position[1] === bird.lng
+                );
+
+                if (existingMarkerIndex !== -1) {
+                  // Add bird to existing marker's birds array
+                  markers[existingMarkerIndex].birds.push(bird);
+                  return markers;
+                } else {
+                  // Create new marker with birds array
+                  markers.push({
+                    position: [bird.lat, bird.lng],
+                    birds: [bird],
+                    key: `marker-${index}`,
+                  });
+                  return markers;
+                }
+              },
+              [] as Array<{
+                position: [number, number];
+                birds: (typeof data)[0][];
+                key: string;
+              }>
+            )
+            .map((marker) => (
+              <Marker
+                key={marker.key}
+                position={marker.position}
+                icon={customBirdIcon}
+              >
+                <Popup>
+                  <BirdPopup birds={marker.birds} wikiDataMap={wikiResults} />
+                </Popup>
+              </Marker>
+            ))}
+        </MapContainer>
+      </div>
     </div>
   );
 };
