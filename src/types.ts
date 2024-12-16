@@ -81,7 +81,7 @@ export interface BirdData {
   timestamp: string;
 }
 
-export type FetchBirdData = (birdName: string) => Promise<BirdData>;
+export type FetchBirdData = (birdName: string) => Promise<BirdData | null>;
 
 export type LoadingProps = {
   animationType?:

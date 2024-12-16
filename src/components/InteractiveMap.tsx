@@ -65,7 +65,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
   setLatitude,
   setLongitude,
   data,
-  wikiDataMap: wikiResults,
+  wikiDataMap,
 }) => {
   const mapRef = useRef<LeafletMap | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -184,7 +184,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 icon={customBirdIcon}
               >
                 <Popup>
-                  <BirdPopup birds={marker.birds} wikiDataMap={wikiResults} />
+                  <BirdPopup birds={marker.birds} wikiDataMap={wikiDataMap} />
                 </Popup>
               </Marker>
             ))}

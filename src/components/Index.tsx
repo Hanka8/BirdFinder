@@ -81,11 +81,44 @@ const Index: React.FC = () => {
 
   const fetchBirdData: FetchBirdData = async (birdName) => {
     try {
+      // First try with bird name
       const response = await fetch(
         `https://en.wikipedia.org/api/rest_v1/page/summary/${birdName}`
       );
-      const data = await response.json();
-      return data;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.type !== "disambiguation") {
+          return data;
+        }
+      }
+
+      // Try with "(bird)" suffix if first response was disambiguation
+      const speciesResponse = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${birdName}_(bird)`
+      );
+      if (speciesResponse.ok) {
+        const data = await speciesResponse.json();
+        if (Object.keys(data).length > 0) {
+          return data;
+        }
+      }
+
+      // Try with "Common" prefix
+      const commonResponse = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/Common_${birdName}`
+      );
+      if (commonResponse.ok) {
+        return await commonResponse.json();
+      }
+
+      // Try with "European" prefix
+      const europeanResponse = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/European_${birdName}`
+      );
+      if (europeanResponse.ok) {
+        return await europeanResponse.json();
+      }
+
     } catch (error) {
       console.error("Error fetching bird data from Wikipedia:", error);
       return {};
@@ -104,15 +137,16 @@ const Index: React.FC = () => {
   });
 
   // Add Wikipedia data queries
-  const wikiQueries = data?.map((bird) => ({
-    queryKey: ["birdData", bird.sciName],
-    queryFn: () => fetchBirdData(bird.sciName),
-  })) || [];
+  const wikiQueries =
+    data?.map((bird) => ({
+      queryKey: ["birdData", bird.comName],
+      queryFn: () => fetchBirdData(bird.comName),
+    })) || [];
 
   const wikiResults = useQueries({
     queries: wikiQueries,
   });
-
+  
   // Create a map for faster lookups
   const wikiDataMap = useMemo(() => {
     const map = new Map();
@@ -167,9 +201,7 @@ const Index: React.FC = () => {
           {data &&
             data.length === 0 &&
             !isLoadingData &&
-            !isLoadingLocation && (
-              <NoBirds />
-            )}
+            !isLoadingLocation && <NoBirds />}
           {data && (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 m-5">
               {data.length > 0 &&
@@ -177,11 +209,11 @@ const Index: React.FC = () => {
                   <BirdCard
                     key={bird.speciesCode}
                     bird={bird}
-                    birdData={wikiResults[index]?.data}
+                    birdData={wikiResults[index]?.data ?? undefined}
                     isLoading={wikiResults[index]?.isLoading || false}
                     error={wikiResults[index]?.error as Error}
                   />
-              ))}
+                ))}
             </div>
           )}
         </div>

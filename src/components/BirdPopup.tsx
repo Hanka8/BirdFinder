@@ -6,19 +6,47 @@ const BirdPopup: React.FC<BirdPopupProps> = ({ birds, wikiDataMap }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) => 
+    setCurrentIndex((prevIndex) =>
       prevIndex === birds.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   const goToPrevious = () => {
-    setCurrentIndex((prevIndex) => 
+    setCurrentIndex((prevIndex) =>
       prevIndex === 0 ? birds.length - 1 : prevIndex - 1
     );
   };
 
   const currentBird = birds[currentIndex];
-  const wikiData = wikiDataMap.get(currentBird.comName.toUpperCase());
+  const wikiData =
+    wikiDataMap.get(currentBird.comName.toUpperCase()) ||
+    // if no bird change eurasian to common and vice versa
+    wikiDataMap.get(
+      currentBird.comName
+        .replace("EURASIAN", "COMMON")
+        .replace("COMMON", "EURASIAN")
+        .toUpperCase()
+    ) ||
+    // if rook go to bird page
+    (currentBird.comName.toUpperCase() === "ROOK"
+      ? wikiDataMap.get("ROOK (BIRD)")
+      : null) ||
+    // if rock pigeon go to rock dove
+    (currentBird.comName.toUpperCase() === "ROCK PIGEON"
+      ? wikiDataMap.get("ROCK DOVE")
+      : null) ||
+      // replace "-" with " "
+      (currentBird.comName.includes("-")
+        ? wikiDataMap.get(currentBird.comName.replace(/-/g, " ").toUpperCase())
+        : null) ||
+    wikiDataMap.get(
+      currentBird.comName.split(" ").slice(1).join(" ").toUpperCase()
+    ) ||
+    Array.from(wikiDataMap.entries()).find(([key]) =>
+      key.includes(
+        currentBird.comName.split(" ").slice(1).join(" ").toUpperCase()
+      )
+    )?.[1];
 
   return (
     <div className="bird-popup relative">
@@ -30,7 +58,7 @@ const BirdPopup: React.FC<BirdPopupProps> = ({ birds, wikiDataMap }) => {
             className="w-full object-cover rounded-t-xl"
           />
         )}
-        
+
         {birds.length > 1 && (
           <>
             <button
