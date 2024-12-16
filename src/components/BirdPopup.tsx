@@ -1,6 +1,7 @@
 import { BirdPopupProps } from "../types";
 import { useState } from "react";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
+import { useSwipeable } from "react-swipeable";
 
 const BirdPopup: React.FC<BirdPopupProps> = ({ birds, wikiDataMap }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -17,7 +18,15 @@ const BirdPopup: React.FC<BirdPopupProps> = ({ birds, wikiDataMap }) => {
     );
   };
 
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: goToNext,
+    onSwipedRight: goToPrevious,
+    preventScrollOnSwipe: true,
+    trackMouse: true
+  });
+
   const currentBird = birds[currentIndex];
+  
   const wikiData =
     wikiDataMap.get(currentBird.comName.toUpperCase()) ||
     // if no bird change eurasian to common and vice versa
@@ -49,7 +58,7 @@ const BirdPopup: React.FC<BirdPopupProps> = ({ birds, wikiDataMap }) => {
     )?.[1];
 
   return (
-    <div className="bird-popup relative">
+    <div className="bird-popup relative" {...swipeHandlers}>
       <div className="relative">
         {wikiData?.thumbnail && (
           <img

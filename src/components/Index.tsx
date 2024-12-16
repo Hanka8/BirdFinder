@@ -21,6 +21,7 @@ const Index: React.FC = () => {
   const [adressFromMap, setAdressFromMap] = useState<string>("");
   const hasFetchedGeolocation = useRef(false);
   const navigate = useNavigate();
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
 
   // get geolocation from browser on first render
   useEffect(() => {
@@ -212,6 +213,7 @@ const Index: React.FC = () => {
                     birdData={wikiResults[index]?.data ?? undefined}
                     isLoading={wikiResults[index]?.isLoading || false}
                     error={wikiResults[index]?.error as Error}
+                    onLocationClick={() => setSelectedLocation(bird.locName)}
                   />
                 ))}
             </div>
@@ -224,6 +226,8 @@ const Index: React.FC = () => {
           setLongitude={setLongitude}
           data={data}
           wikiDataMap={wikiDataMap}
+          selectedLocation={selectedLocation}
+          onMapClick={() => setSelectedLocation(null)}
         />
       </div>
     </div>

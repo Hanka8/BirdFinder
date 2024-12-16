@@ -1,21 +1,18 @@
 import { format, parseISO } from "date-fns";
-import { Link } from "@tanstack/react-router";
 import { BirdCardProps } from "../types";
 import { IoLocationOutline } from "react-icons/io5";
 import { IoTimeOutline } from "react-icons/io5";
 import Loading from "./Loading";
 import Error from "./Error";
 
-const BirdCard: React.FC<BirdCardProps> = ({ bird, birdData, isLoading, error }) => {
+const BirdCard: React.FC<BirdCardProps> = ({ bird, birdData, isLoading, error, onLocationClick }) => {
   const formattedDate = format(parseISO(bird.obsDt), "d.MM.");
   const formattedTime = format(parseISO(bird.obsDt), "H:mm");
-  const birdSciNameTrimmed = bird.sciName.replace(" ", "_");
 
   return (
-    <Link to={`/${birdSciNameTrimmed}`}>
       <div
         key={bird.speciesCode}
-        className="bg-white border rounded-lg w-full max-w-sm mx-auto shadow-md hover:-translate-y-2 transition-transform duration-300"
+        className="bg-white border rounded-lg w-full max-w-sm mx-auto shadow-md"
       >
         {birdData?.thumbnail && (
           <div
@@ -44,13 +41,15 @@ const BirdCard: React.FC<BirdCardProps> = ({ bird, birdData, isLoading, error })
             <IoTimeOutline size={20} />
             {formattedTime}, {formattedDate}
           </p>
-          <p className="flex items-start gap-1 text-gray-700 mt-2 italic">
+          <p 
+            className="flex items-start gap-1 text-gray-700 mt-2 italic hover:underline hover:cursor-pointer"
+            onClick={() => onLocationClick?.(bird.locName)}
+          >
             <IoLocationOutline size={20} className="shrink-0"/>
             {bird.locName}
           </p>
         </div>
-      </div>
-    </Link>
+      </div>  
   );
 };
 

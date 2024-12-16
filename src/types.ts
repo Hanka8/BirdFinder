@@ -29,6 +29,7 @@ export type BirdCardProps = {
   birdData?: BirdData;
   isLoading: boolean;
   error?: Error;
+  onLocationClick?: (location: string) => void;
 };
 
 export interface BirdData {
@@ -119,6 +120,8 @@ export type InteractiveMapProps = {
   setLongitude: (value: string) => void;
   data?: Bird[];
   wikiDataMap: Map<string, BirdData>;
+  selectedLocation: string | null;
+  onMapClick: () => void;
 };
 
 export type BirdPopupProps = {
