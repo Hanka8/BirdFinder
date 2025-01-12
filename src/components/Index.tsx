@@ -80,50 +80,36 @@ const Index: React.FC = () => {
     return data;
   };
 
-  const fetchBirdData: FetchBirdData = async (birdName) => {
+  // Define transformations 
+  const transformations = {
+    standard: (name: string) => name,
+    addBirdSuffix: (name: string) => `${name}_(bird)`,
+    addCommonPrefix: (name: string) => `Common_${name}`,
+    addEuropeanPrefix: (name: string) => `European_${name}`,
+  };
+
+  // Pure fetch function - single responsibility
+  const fetchWikipediaData = async (pageName: string) => {
     try {
-      // First try with bird name
       const response = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${birdName}`
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${pageName}`
       );
-      if (response.ok) {
-        const data = await response.json();
-        if (data.type !== "disambiguation") {
-          return data;
-        }
-      }
-
-      // Try with "(bird)" suffix if first response was disambiguation
-      const speciesResponse = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/${birdName}_(bird)`
-      );
-      if (speciesResponse.ok) {
-        const data = await speciesResponse.json();
-        if (Object.keys(data).length > 0) {
-          return data;
-        }
-      }
-
-      // Try with "Common" prefix
-      const commonResponse = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/Common_${birdName}`
-      );
-      if (commonResponse.ok) {
-        return await commonResponse.json();
-      }
-
-      // Try with "European" prefix
-      const europeanResponse = await fetch(
-        `https://en.wikipedia.org/api/rest_v1/page/summary/European_${birdName}`
-      );
-      if (europeanResponse.ok) {
-        return await europeanResponse.json();
-      }
-
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data.type !== "disambiguation" ? data : null;
     } catch (error) {
-      console.error("Error fetching bird data from Wikipedia:", error);
-      return {};
+      console.error("Error fetching Wikipedia data:", error);
+      return null;
     }
+  };
+
+  // Main function using transformations
+  const fetchBirdData: FetchBirdData = async (birdName: string) => {
+    for (const transform of Object.values(transformations)) {
+      const data = await fetchWikipediaData(transform(birdName));
+      if (data) return data;
+    }
+    return {};
   };
 
   const {
@@ -147,7 +133,7 @@ const Index: React.FC = () => {
   const wikiResults = useQueries({
     queries: wikiQueries,
   });
-  
+
   // Create a map for faster lookups
   const wikiDataMap = useMemo(() => {
     const map = new Map();
