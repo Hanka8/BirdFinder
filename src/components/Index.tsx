@@ -10,7 +10,7 @@ import Loading from "./Loading";
 import NoBirds from "./NoBirds";
 import Error from "./Error";
 import "../index.css";
-import { FetchBirdsNearby, Bird, FetchBirdData } from "../types";
+import { FetchBirdsNearby, Bird, FetchBirdData, ErrorProps } from "../types";
 
 const Index: React.FC = () => {
   const [latitude, setLatitude] = useState<string>("");
@@ -80,7 +80,7 @@ const Index: React.FC = () => {
     return data;
   };
 
-  // Define transformations 
+  // Define transformations
   const transformations = {
     standard: (name: string) => name,
     addBirdSuffix: (name: string) => `${name}_(bird)`,
@@ -106,10 +106,17 @@ const Index: React.FC = () => {
   // Main function using transformations
   const fetchBirdData: FetchBirdData = async (birdName: string) => {
     for (const transform of Object.values(transformations)) {
-      const data = await fetchWikipediaData(transform(birdName));
-      if (data) return data;
+      try {
+        return await fetchWikipediaData(transform(birdName));
+      } catch (error) {
+        console.error(`Failed attempt for ${transform(birdName)}:`, error);
+        continue; // Try next transformation
+      }
     }
-    return {};
+    const error: ErrorProps = {
+      message: `Could not find Wikipedia data for ${birdName}`,
+    };
+    throw error;
   };
 
   const {
