@@ -22,40 +22,40 @@ const BirdPopup: React.FC<BirdPopupProps> = ({ birds, wikiDataMap }) => {
     onSwipedLeft: goToNext,
     onSwipedRight: goToPrevious,
     preventScrollOnSwipe: true,
-    trackMouse: true
+    trackMouse: true,
   });
 
   const currentBird = birds[currentIndex];
-  
-  const wikiData =
-    wikiDataMap.get(currentBird.comName.toUpperCase()) ||
-    // if no bird change eurasian to common and vice versa
-    wikiDataMap.get(
-      currentBird.comName
-        .replace("EURASIAN", "COMMON")
-        .replace("COMMON", "EURASIAN")
-        .toUpperCase()
-    ) ||
-    // if rook go to bird page
-    (currentBird.comName.toUpperCase() === "ROOK"
-      ? wikiDataMap.get("ROOK (BIRD)")
-      : null) ||
-    // if rock pigeon go to rock dove
-    (currentBird.comName.toUpperCase() === "ROCK PIGEON"
-      ? wikiDataMap.get("ROCK DOVE")
-      : null) ||
-      // replace "-" with " "
-      (currentBird.comName.includes("-")
-        ? wikiDataMap.get(currentBird.comName.replace(/-/g, " ").toUpperCase())
-        : null) ||
-    wikiDataMap.get(
-      currentBird.comName.split(" ").slice(1).join(" ").toUpperCase()
-    ) ||
-    Array.from(wikiDataMap.entries()).find(([key]) =>
-      key.includes(
-        currentBird.comName.split(" ").slice(1).join(" ").toUpperCase()
-      )
+
+  // helper functions
+  const transformations = {
+    standard: (name: string) => name,
+    swapEurasianCommon: (name: string) =>
+      name.replace("EURASIAN", "COMMON").replace("COMMON", "EURASIAN"),
+    addBirdSuffix: (name: string) => (name === "ROOK" ? "ROOK (BIRD)" : name),
+    replaceDash: (name: string) => name.replace(/-/g, " "),
+    rockPigeonToDove: (name: string) =>
+      name === "ROCK PIGEON" ? "ROCK DOVE" : name,
+    removeFirstWord: (name: string) => name.split(" ").slice(1).join(" "),
+  };
+
+  const getWikiData = (birdName: string) => {
+    const normalizedName = birdName.toUpperCase();
+
+    // Try each transformation until we find a match
+    for (const transform of Object.values(transformations)) {
+      const transformedName = transform(normalizedName);
+      const found = wikiDataMap.get(transformedName);
+      if (found) return found;
+    }
+
+    // Last resort: partial match
+    return Array.from(wikiDataMap.entries()).find(([key]) =>
+      key.includes(transformations.removeFirstWord(normalizedName))
     )?.[1];
+  };
+
+  const wikiData = getWikiData(currentBird.comName);
 
   return (
     <div className="bird-popup relative" {...swipeHandlers}>
